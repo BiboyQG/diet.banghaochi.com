@@ -1,0 +1,26 @@
+{
+  "name": "@diet/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787 --local",
+    "build": "wrangler deploy --dry-run --outdir dist --env=\"\"",
+    "typecheck": "wrangler types ./src/worker-configuration.d.ts && tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --config vitest.config.ts",
+    "cf:types": "wrangler types ./src/worker-configuration.d.ts",
+    "db:migrate:local": "wrangler d1 migrations apply diet-tracker --local"
+  },
+  "dependencies": {
+    "@diet/shared": "^0.1.0",
+    "hono": "^4.12.25",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.16.15",
+    "@types/node": "^25.9.3",
+    "vitest": "^4.1.8",
+    "wrangler": "^4.100.0"
+  }
+}

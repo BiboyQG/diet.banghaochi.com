@@ -1,0 +1,75 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "diet-tracker-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-06-14",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "../web/dist",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*", "/auth/*"]
+  },
+  "vars": {
+    "ENVIRONMENT": "local",
+    "IOS_AUTH_CALLBACK_URL": "diettracker://access/callback"
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "head_sampling_rate": 1
+    }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "diet-tracker",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "preview_database_id": "DB",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "env": {
+    "staging": {
+      "name": "diet-tracker-api-staging",
+      "routes": [
+        {
+          "pattern": "diet-staging.banghaochi.com",
+          "custom_domain": true
+        }
+      ],
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "IOS_AUTH_CALLBACK_URL": "diettracker://access/callback"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "diet-tracker-staging",
+          "database_id": "36dda18b-d532-4c16-ac94-41af5e65d87b",
+          "migrations_dir": "migrations"
+        }
+      ]
+    },
+    "production": {
+      "name": "diet-tracker-api-production",
+      "routes": [
+        {
+          "pattern": "diet.banghaochi.com",
+          "custom_domain": true
+        }
+      ],
+      "vars": {
+        "ENVIRONMENT": "production",
+        "IOS_AUTH_CALLBACK_URL": "diettracker://access/callback"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "diet-tracker-production",
+          "database_id": "df040bcd-667a-476a-8107-8d53ac750811",
+          "migrations_dir": "migrations"
+        }
+      ]
+    }
+  }
+}

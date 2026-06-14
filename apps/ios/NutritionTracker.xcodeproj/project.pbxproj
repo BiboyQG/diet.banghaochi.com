@@ -1,0 +1,484 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		006F03B3941C8043DA56AFEC /* AppStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 657CAA00E13E549D5A58B4A5 /* AppStore.swift */; };
+		01B492C8C69A724C0B33199B /* NutritionTrackerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72C52FC98D1E411D3D1B50F5 /* NutritionTrackerApp.swift */; };
+		0289729B1992614B9ABD31E9 /* CalculationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E282A1ABDD1A8C53BC77DEEC /* CalculationTests.swift */; };
+		312D456760462F1BD105D93C /* NutritionAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAD365596580E50B390E3F63 /* NutritionAPIClient.swift */; };
+		336882B73148157B69CB7AF1 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00DFBBB45266F9E54E1C0BF9 /* LoginView.swift */; };
+		4B77C1159282438BC36DB66C /* HistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CF55F0701E76D7D6D0F057A3 /* HistoryView.swift */; };
+		4D523C19654C8897447FFCC4 /* AuthSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658A96D42013A1A38AB69808 /* AuthSessionStore.swift */; };
+		72D62D27E0E3E5A3219D0504 /* APIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E9D3A524C23F58240BBA96B /* APIClientTests.swift */; };
+		7805CE39E08B4EEDAA02E093 /* Fixtures.swift in Sources */ = {isa = PBXBuildFile; fileRef = 524254CAA0395D79D053EFE2 /* Fixtures.swift */; };
+		8D83D2F161889CC48B9FC597 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F3EBD4CECDECDF44C382B47 /* Components.swift */; };
+		9CB12E538CC220E204E857F9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFE33C5CD6551804F2D2FDC /* SettingsView.swift */; };
+		A26AFD2A42D428364B3644A9 /* EntryEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C75E4EFE4D8B5BE03D32C2 /* EntryEditorView.swift */; };
+		AF6A81AA131DBFAB22252A5B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A8C82B42B95E8EB3AB5D8D48 /* Assets.xcassets */; };
+		C4ABDE61FF21845E07995817 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E2DFBA64517D672203999 /* AppEnvironment.swift */; };
+		CAC1D5B61AE67BFBA872A34D /* AuthSessionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A713728A82E8D99A4F9D393C /* AuthSessionTests.swift */; };
+		CC5E13BC59311A4B3A77065F /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = C79878F5AD67DA7FFC390FF6 /* Models.swift */; };
+		CDCD5519B33EB918BC4D45C7 /* AppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28E8DC6EFA6A9018065240EB /* AppView.swift */; };
+		E3200EC359F10D1BED4E20DE /* NutritionCalculations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5059221051D1FDA01FA159DE /* NutritionCalculations.swift */; };
+		EB6062CE0D5EF1CE379CCEA7 /* BodyWeightEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2F28838CFE5DA644938787D /* BodyWeightEditorView.swift */; };
+		F969B3705B5AA3EC185C8FF0 /* TodayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 310AAAC279FE5AD620E5C94E /* TodayView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		E493F7858EAC109D2DF56DA4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 07073D46E18AAD00DDEC91C0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 82DAF825C2EF3FF5EB054D3F;
+			remoteInfo = NutritionTracker;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		00DFBBB45266F9E54E1C0BF9 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		0A4E2DFBA64517D672203999 /* AppEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppEnvironment.swift; sourceTree = "<group>"; };
+		17034EF3C6374AA7316EDA97 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		28E8DC6EFA6A9018065240EB /* AppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppView.swift; sourceTree = "<group>"; };
+		310AAAC279FE5AD620E5C94E /* TodayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TodayView.swift; sourceTree = "<group>"; };
+		3F3EBD4CECDECDF44C382B47 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		5059221051D1FDA01FA159DE /* NutritionCalculations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionCalculations.swift; sourceTree = "<group>"; };
+		524254CAA0395D79D053EFE2 /* Fixtures.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fixtures.swift; sourceTree = "<group>"; };
+		61C75E4EFE4D8B5BE03D32C2 /* EntryEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntryEditorView.swift; sourceTree = "<group>"; };
+		657CAA00E13E549D5A58B4A5 /* AppStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppStore.swift; sourceTree = "<group>"; };
+		658A96D42013A1A38AB69808 /* AuthSessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSessionStore.swift; sourceTree = "<group>"; };
+		6C7E3F2829C4AB8A4ECE093F /* NutritionTrackerTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = NutritionTrackerTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		72C52FC98D1E411D3D1B50F5 /* NutritionTrackerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionTrackerApp.swift; sourceTree = "<group>"; };
+		9E9D3A524C23F58240BBA96B /* APIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClientTests.swift; sourceTree = "<group>"; };
+		A713728A82E8D99A4F9D393C /* AuthSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSessionTests.swift; sourceTree = "<group>"; };
+		A8C82B42B95E8EB3AB5D8D48 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		C79878F5AD67DA7FFC390FF6 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		CF55F0701E76D7D6D0F057A3 /* HistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryView.swift; sourceTree = "<group>"; };
+		D2F28838CFE5DA644938787D /* BodyWeightEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyWeightEditorView.swift; sourceTree = "<group>"; };
+		E282A1ABDD1A8C53BC77DEEC /* CalculationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculationTests.swift; sourceTree = "<group>"; };
+		EBFE33C5CD6551804F2D2FDC /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F7A7778041A35A7C6ECBF099 /* NutritionTracker.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NutritionTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FAD365596580E50B390E3F63 /* NutritionAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionAPIClient.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		0BA984996364C588FE757564 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F7A7778041A35A7C6ECBF099 /* NutritionTracker.app */,
+				6C7E3F2829C4AB8A4ECE093F /* NutritionTrackerTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3C93473DFDA7E05625134C76 /* NutritionTracker */ = {
+			isa = PBXGroup;
+			children = (
+				0A4E2DFBA64517D672203999 /* AppEnvironment.swift */,
+				657CAA00E13E549D5A58B4A5 /* AppStore.swift */,
+				28E8DC6EFA6A9018065240EB /* AppView.swift */,
+				A8C82B42B95E8EB3AB5D8D48 /* Assets.xcassets */,
+				658A96D42013A1A38AB69808 /* AuthSessionStore.swift */,
+				D2F28838CFE5DA644938787D /* BodyWeightEditorView.swift */,
+				3F3EBD4CECDECDF44C382B47 /* Components.swift */,
+				61C75E4EFE4D8B5BE03D32C2 /* EntryEditorView.swift */,
+				524254CAA0395D79D053EFE2 /* Fixtures.swift */,
+				CF55F0701E76D7D6D0F057A3 /* HistoryView.swift */,
+				17034EF3C6374AA7316EDA97 /* Info.plist */,
+				00DFBBB45266F9E54E1C0BF9 /* LoginView.swift */,
+				C79878F5AD67DA7FFC390FF6 /* Models.swift */,
+				FAD365596580E50B390E3F63 /* NutritionAPIClient.swift */,
+				5059221051D1FDA01FA159DE /* NutritionCalculations.swift */,
+				72C52FC98D1E411D3D1B50F5 /* NutritionTrackerApp.swift */,
+				EBFE33C5CD6551804F2D2FDC /* SettingsView.swift */,
+				310AAAC279FE5AD620E5C94E /* TodayView.swift */,
+			);
+			path = NutritionTracker;
+			sourceTree = "<group>";
+		};
+		61BD62D6947FC2C07A208B7E /* NutritionTrackerTests */ = {
+			isa = PBXGroup;
+			children = (
+				9E9D3A524C23F58240BBA96B /* APIClientTests.swift */,
+				A713728A82E8D99A4F9D393C /* AuthSessionTests.swift */,
+				E282A1ABDD1A8C53BC77DEEC /* CalculationTests.swift */,
+			);
+			path = NutritionTrackerTests;
+			sourceTree = "<group>";
+		};
+		9B739D80148948EAD0BED144 = {
+			isa = PBXGroup;
+			children = (
+				3C93473DFDA7E05625134C76 /* NutritionTracker */,
+				61BD62D6947FC2C07A208B7E /* NutritionTrackerTests */,
+				0BA984996364C588FE757564 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		82DAF825C2EF3FF5EB054D3F /* NutritionTracker */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FB99DB955CEDF3007EF9C9A2 /* Build configuration list for PBXNativeTarget "NutritionTracker" */;
+			buildPhases = (
+				517C5AF8F81255709DA01FFE /* Sources */,
+				131E055AA598BF5286AB9C05 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = NutritionTracker;
+			packageProductDependencies = (
+			);
+			productName = NutritionTracker;
+			productReference = F7A7778041A35A7C6ECBF099 /* NutritionTracker.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A573A164085B7D59BBAA53CB /* NutritionTrackerTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1BDF1043C8D6CB4FA1A164C0 /* Build configuration list for PBXNativeTarget "NutritionTrackerTests" */;
+			buildPhases = (
+				DEEF4D969A983B09183327FF /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A239CB6F8105512E8F7E3AD5 /* PBXTargetDependency */,
+			);
+			name = NutritionTrackerTests;
+			packageProductDependencies = (
+			);
+			productName = NutritionTrackerTests;
+			productReference = 6C7E3F2829C4AB8A4ECE093F /* NutritionTrackerTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		07073D46E18AAD00DDEC91C0 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					82DAF825C2EF3FF5EB054D3F = {
+						DevelopmentTeam = "";
+					};
+					A573A164085B7D59BBAA53CB = {
+						DevelopmentTeam = "";
+					};
+				};
+			};
+			buildConfigurationList = 5410DFDAE310878691ECC5A5 /* Build configuration list for PBXProject "NutritionTracker" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 9B739D80148948EAD0BED144;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 0BA984996364C588FE757564 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				82DAF825C2EF3FF5EB054D3F /* NutritionTracker */,
+				A573A164085B7D59BBAA53CB /* NutritionTrackerTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		131E055AA598BF5286AB9C05 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AF6A81AA131DBFAB22252A5B /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		517C5AF8F81255709DA01FFE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C4ABDE61FF21845E07995817 /* AppEnvironment.swift in Sources */,
+				006F03B3941C8043DA56AFEC /* AppStore.swift in Sources */,
+				CDCD5519B33EB918BC4D45C7 /* AppView.swift in Sources */,
+				4D523C19654C8897447FFCC4 /* AuthSessionStore.swift in Sources */,
+				EB6062CE0D5EF1CE379CCEA7 /* BodyWeightEditorView.swift in Sources */,
+				8D83D2F161889CC48B9FC597 /* Components.swift in Sources */,
+				A26AFD2A42D428364B3644A9 /* EntryEditorView.swift in Sources */,
+				7805CE39E08B4EEDAA02E093 /* Fixtures.swift in Sources */,
+				4B77C1159282438BC36DB66C /* HistoryView.swift in Sources */,
+				336882B73148157B69CB7AF1 /* LoginView.swift in Sources */,
+				CC5E13BC59311A4B3A77065F /* Models.swift in Sources */,
+				312D456760462F1BD105D93C /* NutritionAPIClient.swift in Sources */,
+				E3200EC359F10D1BED4E20DE /* NutritionCalculations.swift in Sources */,
+				01B492C8C69A724C0B33199B /* NutritionTrackerApp.swift in Sources */,
+				9CB12E538CC220E204E857F9 /* SettingsView.swift in Sources */,
+				F969B3705B5AA3EC185C8FF0 /* TodayView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DEEF4D969A983B09183327FF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				72D62D27E0E3E5A3219D0504 /* APIClientTests.swift in Sources */,
+				CAC1D5B61AE67BFBA872A34D /* AuthSessionTests.swift in Sources */,
+				0289729B1992614B9ABD31E9 /* CalculationTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A239CB6F8105512E8F7E3AD5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 82DAF825C2EF3FF5EB054D3F /* NutritionTracker */;
+			targetProxy = E493F7858EAC109D2DF56DA4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		00EAD6C1E186D202F89667BB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = NutritionTracker/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.banghaochi.diet;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		1D809E9D49B7E225DE7B1A99 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = NutritionTracker/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.banghaochi.diet;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8F45214A0DD3754055974461 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		98DF9475EC055937E6A974E4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.banghaochi.diet.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NutritionTracker.app/NutritionTracker";
+			};
+			name = Debug;
+		};
+		A205C2A18913BDAFD4D47F12 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.banghaochi.diet.tests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/NutritionTracker.app/NutritionTracker";
+			};
+			name = Release;
+		};
+		E4FCDAAA149416C6BFEF229D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1BDF1043C8D6CB4FA1A164C0 /* Build configuration list for PBXNativeTarget "NutritionTrackerTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				98DF9475EC055937E6A974E4 /* Debug */,
+				A205C2A18913BDAFD4D47F12 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		5410DFDAE310878691ECC5A5 /* Build configuration list for PBXProject "NutritionTracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8F45214A0DD3754055974461 /* Debug */,
+				E4FCDAAA149416C6BFEF229D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FB99DB955CEDF3007EF9C9A2 /* Build configuration list for PBXNativeTarget "NutritionTracker" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1D809E9D49B7E225DE7B1A99 /* Debug */,
+				00EAD6C1E186D202F89667BB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 07073D46E18AAD00DDEC91C0 /* Project object */;
+}

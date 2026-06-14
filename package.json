@@ -1,0 +1,34 @@
+{
+  "name": "diet-banghaochi",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n worker,web -c cyan,green \"npm run dev --workspace @diet/worker\" \"npm run dev --workspace @diet/web\"",
+    "dev:worker": "npm run dev --workspace @diet/worker",
+    "dev:web": "npm run dev --workspace @diet/web",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "test": "npm run test --workspace @diet/shared",
+    "test:worker": "npm run test --workspace @diet/worker",
+    "test:web": "npm run test --workspace @diet/web",
+    "test:e2e": "npm run test:e2e --workspace @diet/web",
+    "db:migrate:local": "npm run db:migrate:local --workspace @diet/worker",
+    "wrangler:types": "npm run cf:types --workspace @diet/worker"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "concurrently": "^10.0.3",
+    "eslint": "^10.5.0",
+    "globals": "^17.6.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.61.0"
+  }
+}
