@@ -5,20 +5,28 @@ import {
   dayTypeSchema,
   entryCreateSchema,
   entryPatchSchema,
+  foodTemplateCreateSchema,
+  foodTemplateLogSchema,
+  foodTemplatePatchSchema,
   localDateSchema,
   profilePatchSchema,
   targetPatchSchema
 } from "@diet/shared";
 import {
   addBodyWeight,
+  createFoodTemplate,
   createEntry,
   deleteEntry,
+  deleteFoodTemplate,
   exportAllData,
   getDay,
   getDays,
+  getFoodTemplates,
   getProfile,
   getSummary,
   getTargets,
+  logFoodTemplate,
+  patchFoodTemplate,
   patchDay,
   patchEntry,
   patchProfile,
@@ -122,6 +130,40 @@ app.delete("/api/v1/entries/:id", async (c) => {
   const result = await deleteEntry(c.env.DB, c.req.param("id"));
   if (result == null) return c.json({ error: "not_found" }, 404);
   return c.json(result);
+});
+
+app.get("/api/v1/food-templates", async (c) =>
+  c.json(await getFoodTemplates(c.env.DB))
+);
+
+app.post("/api/v1/food-templates", async (c) => {
+  const body = await parseBody(c, foodTemplateCreateSchema);
+  if (!body.ok) return body.response;
+  return c.json(await createFoodTemplate(c.env.DB, body.data), 201);
+});
+
+app.patch("/api/v1/food-templates/:id", async (c) => {
+  const body = await parseBody(c, foodTemplatePatchSchema);
+  if (!body.ok) return body.response;
+
+  const result = await patchFoodTemplate(c.env.DB, c.req.param("id"), body.data);
+  if (result == null) return c.json({ error: "not_found" }, 404);
+  return c.json(result);
+});
+
+app.delete("/api/v1/food-templates/:id", async (c) => {
+  const result = await deleteFoodTemplate(c.env.DB, c.req.param("id"));
+  if (result == null) return c.json({ error: "not_found" }, 404);
+  return c.json(result);
+});
+
+app.post("/api/v1/food-templates/:id/log", async (c) => {
+  const body = await parseBody(c, foodTemplateLogSchema);
+  if (!body.ok) return body.response;
+
+  const result = await logFoodTemplate(c.env.DB, c.req.param("id"), body.data);
+  if (result == null) return c.json({ error: "not_found" }, 404);
+  return c.json(result, 201);
 });
 
 app.post("/api/v1/body-weights", async (c) => {

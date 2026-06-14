@@ -87,6 +87,46 @@ extension Entry {
     }
 }
 
+extension FoodTemplate {
+    static let chipotle = FoodTemplate(
+        id: "template-chipotle-bowl",
+        mealSlot: .lunch,
+        name: "Chipotle half barbacoa + honey chicken bowl",
+        caloriesKcal: 540,
+        carbsG: 54.5,
+        proteinG: 28.5,
+        fatG: 20.5,
+        waterMl: 0,
+        notes: "White rice, fresh tomato salsa, romaine lettuce, sour cream, no beans.",
+        usageCount: 0,
+        lastUsedAt: nil,
+        createdAt: "2026-06-14T00:00:00.000Z",
+        updatedAt: "2026-06-14T00:00:00.000Z",
+        deletedAt: nil
+    )
+
+    static let fixtures = [chipotle]
+
+    static func fixture(from request: FoodTemplateCreateRequest) -> FoodTemplate {
+        FoodTemplate(
+            id: "template-\(UUID().uuidString)",
+            mealSlot: request.mealSlot,
+            name: request.name,
+            caloriesKcal: request.caloriesKcal,
+            carbsG: request.carbsG,
+            proteinG: request.proteinG,
+            fatG: request.fatG,
+            waterMl: request.waterMl,
+            notes: request.notes,
+            usageCount: 0,
+            lastUsedAt: nil,
+            createdAt: "2026-06-14T00:00:00.000Z",
+            updatedAt: "2026-06-14T00:00:00.000Z",
+            deletedAt: nil
+        )
+    }
+}
+
 extension DayLog {
     static let fixture = DayLog(
         id: "day-fixture",

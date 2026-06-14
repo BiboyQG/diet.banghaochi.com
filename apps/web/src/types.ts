@@ -56,6 +56,23 @@ export interface BodyWeight {
   updated_at: string;
 }
 
+export interface FoodTemplate {
+  id: string;
+  meal_slot: MealSlot;
+  name: string;
+  calories_kcal: number;
+  carbs_g: number;
+  protein_g: number;
+  fat_g: number;
+  water_ml: number;
+  notes: string | null;
+  usage_count: number;
+  last_used_at: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
 export interface DayLog {
   id: string;
   local_date: string;

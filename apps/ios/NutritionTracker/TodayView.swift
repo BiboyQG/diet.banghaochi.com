@@ -5,6 +5,7 @@ struct TodayView: View {
     @Environment(AppStore.self) private var store
     @State private var sheet: TodaySheet?
     @State private var entryPendingDelete: Entry?
+    @State private var templatePendingDelete: FoodTemplate?
 
     var body: some View {
         Group {
@@ -33,6 +34,8 @@ struct TodayView: View {
             switch destination {
             case .entry(let entry):
                 EntryEditorView(entry: entry)
+            case .template(let template):
+                FoodTemplateEditorView(template: template)
             case .bodyWeight(let initialWeightKg):
                 BodyWeightEditorView(initialWeightKg: initialWeightKg)
             }
@@ -51,6 +54,20 @@ struct TodayView: View {
         } message: {
             Text("This removes the entry from today's totals.")
         }
+        .confirmationDialog("Delete common food?", isPresented: templateDeleteConfirmation) {
+            if let templatePendingDelete {
+                Button("Delete", role: .destructive) {
+                    let template = templatePendingDelete
+                    self.templatePendingDelete = nil
+                    Task { await store.deleteFoodTemplate(template) }
+                }
+            }
+            Button("Cancel", role: .cancel) {
+                templatePendingDelete = nil
+            }
+        } message: {
+            Text("This removes the saved shortcut. Existing entries stay logged.")
+        }
     }
 
     private var deleteConfirmation: Binding<Bool> {
@@ -64,6 +81,17 @@ struct TodayView: View {
         )
     }
 
+    private var templateDeleteConfirmation: Binding<Bool> {
+        Binding(
+            get: { templatePendingDelete != nil },
+            set: { isPresented in
+                if !isPresented {
+                    templatePendingDelete = nil
+                }
+            }
+        )
+    }
+
     private func todayContent(_ day: DayLog) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -72,6 +100,7 @@ struct TodayView: View {
                 statCards(day)
                 macroCard(day)
                 quickActions
+                commonFoods
                 bodyWeight(day)
                 entries(day.entries)
             }
@@ -248,6 +277,128 @@ struct TodayView: View {
         .controlSize(.large)
     }
 
+    private var commonFoods: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                SectionLabel(title: "Common foods", systemImage: "bookmark.fill")
+                if !store.foodTemplates.isEmpty {
+                    Text("\(store.foodTemplates.count)")
+                        .font(.caption.weight(.bold))
+                        .monospacedDigit()
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 2)
+                        .background(Color.brand.opacity(0.12), in: Capsule())
+                        .foregroundStyle(.brand)
+                }
+                Spacer()
+                Button {
+                    sheet = .template(nil)
+                } label: {
+                    Label("New", systemImage: "plus")
+                }
+                .buttonStyle(.bordered)
+                .tint(.brand)
+            }
+
+            if store.foodTemplates.isEmpty {
+                VStack(spacing: 6) {
+                    Image(systemName: "bookmark")
+                        .font(.title2)
+                        .foregroundStyle(.tertiary)
+                    Text("No common foods yet")
+                        .font(.subheadline.weight(.semibold))
+                    Text("Save repeated meals to log them in one tap.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 18)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(store.foodTemplates.enumerated()), id: \.element.id) { index, template in
+                        foodTemplateRow(template)
+                        if index < store.foodTemplates.count - 1 {
+                            Divider().padding(.vertical, 2)
+                        }
+                    }
+                }
+            }
+        }
+        .card()
+    }
+
+    private func foodTemplateRow(_ template: FoodTemplate) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 12) {
+                Image(systemName: template.mealSlot.systemImage)
+                    .font(.subheadline)
+                    .foregroundStyle(template.mealSlot.tint)
+                    .frame(width: 36, height: 36)
+                    .background(template.mealSlot.tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(template.name)
+                        .font(.subheadline.weight(.semibold))
+                        .lineLimit(1)
+                    Text(templateMeta(template))
+                        .font(.caption2.weight(.semibold))
+                        .tracking(0.3)
+                        .textCase(.uppercase)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 4)
+
+                Menu {
+                    Button {
+                        sheet = .template(template)
+                    } label: {
+                        Label("Edit", systemImage: "pencil")
+                    }
+                    Button(role: .destructive) {
+                        templatePendingDelete = template
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                } label: {
+                    Image(systemName: "ellipsis")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(width: 32, height: 32)
+                        .contentShape(Rectangle())
+                }
+                .accessibilityLabel("Options for \(template.name)")
+            }
+
+            HStack(spacing: 6) {
+                MacroChip(text: "\(template.caloriesKcal.formatted(.number.precision(.fractionLength(0)))) kcal", isLead: true)
+                MacroChip(text: "\(template.proteinG.formatted(.number.precision(.fractionLength(1)))) P")
+                MacroChip(text: "\(template.carbsG.formatted(.number.precision(.fractionLength(1)))) C")
+                MacroChip(text: "\(template.fatG.formatted(.number.precision(.fractionLength(1)))) F")
+            }
+
+            Button {
+                Task { await store.logFoodTemplate(template) }
+            } label: {
+                Label("Log to today", systemImage: "plus")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .tint(.brand)
+            .accessibilityIdentifier("template.log.\(template.id)")
+        }
+        .padding(.vertical, 10)
+    }
+
+    private func templateMeta(_ template: FoodTemplate) -> String {
+        if template.usageCount > 0 {
+            return "\(template.mealSlot.title) · \(template.usageCount) logged"
+        }
+        return template.mealSlot.title
+    }
+
     private func bodyWeight(_ day: DayLog) -> some View {
         HStack(alignment: .center, spacing: 14) {
             Image(systemName: "scalemass.fill")
@@ -384,12 +535,15 @@ struct TodayView: View {
 
 private enum TodaySheet: Identifiable {
     case entry(Entry?)
+    case template(FoodTemplate?)
     case bodyWeight(Double)
 
     var id: String {
         switch self {
         case .entry(let entry):
             entry?.id ?? "new-entry"
+        case .template(let template):
+            template?.id ?? "new-template"
         case .bodyWeight:
             "body-weight"
         }

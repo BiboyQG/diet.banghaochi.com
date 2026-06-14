@@ -7,6 +7,7 @@ beforeEach(async () => {
   const statements = [
     "DROP TABLE IF EXISTS audit_events",
     "DROP TABLE IF EXISTS body_weights",
+    "DROP TABLE IF EXISTS food_templates",
     "DROP TABLE IF EXISTS entries",
     "DROP TABLE IF EXISTS day_logs",
     "DROP TABLE IF EXISTS daily_targets",
@@ -15,6 +16,7 @@ beforeEach(async () => {
     "CREATE TABLE daily_targets (id TEXT PRIMARY KEY, day_type TEXT NOT NULL UNIQUE CHECK (day_type IN ('training', 'rest')), burn_kcal INTEGER NOT NULL CHECK (burn_kcal >= 0), intake_kcal INTEGER NOT NULL CHECK (intake_kcal >= 0), deficit_kcal INTEGER NOT NULL, carbs_g INTEGER NOT NULL CHECK (carbs_g >= 0), protein_g INTEGER NOT NULL CHECK (protein_g >= 0), fat_g INTEGER NOT NULL CHECK (fat_g >= 0), water_ml INTEGER NOT NULL CHECK (water_ml >= 0), created_at TEXT NOT NULL, updated_at TEXT NOT NULL)",
     "CREATE TABLE day_logs (id TEXT PRIMARY KEY, local_date TEXT NOT NULL UNIQUE, day_type TEXT NOT NULL CHECK (day_type IN ('training', 'rest')), burn_kcal INTEGER NOT NULL CHECK (burn_kcal >= 0), intake_target_kcal INTEGER NOT NULL CHECK (intake_target_kcal >= 0), deficit_target_kcal INTEGER NOT NULL, carbs_target_g INTEGER NOT NULL CHECK (carbs_target_g >= 0), protein_target_g INTEGER NOT NULL CHECK (protein_target_g >= 0), fat_target_g INTEGER NOT NULL CHECK (fat_target_g >= 0), water_target_ml INTEGER NOT NULL CHECK (water_target_ml >= 0), notes TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)",
     "CREATE TABLE entries (id TEXT PRIMARY KEY, day_log_id TEXT NOT NULL REFERENCES day_logs(id) ON DELETE CASCADE, logged_at TEXT NOT NULL, meal_slot TEXT NOT NULL CHECK (meal_slot IN ('breakfast', 'lunch', 'dinner', 'snack', 'drink', 'supplement', 'other')), name TEXT NOT NULL, calories_kcal REAL NOT NULL CHECK (calories_kcal >= 0), carbs_g REAL NOT NULL CHECK (carbs_g >= 0), protein_g REAL NOT NULL CHECK (protein_g >= 0), fat_g REAL NOT NULL CHECK (fat_g >= 0), water_ml REAL NOT NULL CHECK (water_ml >= 0), notes TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, deleted_at TEXT)",
+    "CREATE TABLE food_templates (id TEXT PRIMARY KEY, meal_slot TEXT NOT NULL CHECK (meal_slot IN ('breakfast', 'lunch', 'dinner', 'snack', 'drink', 'supplement', 'other')), name TEXT NOT NULL, calories_kcal REAL NOT NULL CHECK (calories_kcal >= 0), carbs_g REAL NOT NULL CHECK (carbs_g >= 0), protein_g REAL NOT NULL CHECK (protein_g >= 0), fat_g REAL NOT NULL CHECK (fat_g >= 0), water_ml REAL NOT NULL CHECK (water_ml >= 0), notes TEXT, usage_count INTEGER NOT NULL DEFAULT 0 CHECK (usage_count >= 0), last_used_at TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL, deleted_at TEXT)",
     "CREATE TABLE body_weights (id TEXT PRIMARY KEY, local_date TEXT NOT NULL, measured_at TEXT NOT NULL, weight_kg REAL NOT NULL CHECK (weight_kg > 0), notes TEXT, created_at TEXT NOT NULL, updated_at TEXT NOT NULL)",
     "CREATE TABLE audit_events (id TEXT PRIMARY KEY, event_type TEXT NOT NULL, entity_type TEXT NOT NULL, entity_id TEXT NOT NULL, summary TEXT NOT NULL, created_at TEXT NOT NULL)",
     "INSERT INTO profile VALUES ('profile', 'Owner', 'replace-me@example.com', 'male', 25, 170, 70, 'America/Chicago', 1.2, 650, datetime('now'), datetime('now'))",
@@ -159,6 +161,79 @@ describe("diet tracker api", () => {
     }>(deleteResponse);
     expect(deleted.day.totals.calories_kcal).toBe(0);
     expect(deleted.entry.deleted_at).not.toBeNull();
+  });
+
+  it("creates, logs, updates, and soft-deletes food templates", async () => {
+    const createResponse = await api.fetch(
+      "http://example.com/api/v1/food-templates",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          meal_slot: "lunch",
+          name: "Chipotle bowl",
+          calories_kcal: 540,
+          carbs_g: 54.5,
+          protein_g: 28.5,
+          fat_g: 20.5,
+          water_ml: 0,
+          notes: "No beans"
+        })
+      }
+    );
+    const template = await jsonBody<{
+      id: string;
+      name: string;
+      usage_count: number;
+    }>(createResponse);
+
+    expect(createResponse.status).toBe(201);
+    expect(template.name).toBe("Chipotle bowl");
+    expect(template.usage_count).toBe(0);
+
+    const logResponse = await api.fetch(
+      `http://example.com/api/v1/food-templates/${template.id}/log`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          local_date: "2026-06-15",
+          logged_at: "2026-06-15T12:00:00.000Z"
+        })
+      }
+    );
+    const logged = await jsonBody<{
+      template: { usage_count: number };
+      entry: { name: string; calories_kcal: number };
+      day: { totals: { calories_kcal: number; protein_g: number } };
+    }>(logResponse);
+
+    expect(logResponse.status).toBe(201);
+    expect(logged.template.usage_count).toBe(1);
+    expect(logged.entry.name).toBe("Chipotle bowl");
+    expect(logged.day.totals.calories_kcal).toBe(540);
+    expect(logged.day.totals.protein_g).toBe(28.5);
+
+    const patchResponse = await api.fetch(
+      `http://example.com/api/v1/food-templates/${template.id}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify({ name: "Chipotle work bowl" })
+      }
+    );
+    await expect(patchResponse.json()).resolves.toMatchObject({
+      name: "Chipotle work bowl"
+    });
+
+    const deleteResponse = await api.fetch(
+      `http://example.com/api/v1/food-templates/${template.id}`,
+      { method: "DELETE" }
+    );
+    const deleted = await jsonBody<{ deleted_at: string | null }>(deleteResponse);
+    expect(deleted.deleted_at).not.toBeNull();
+
+    const listResponse = await api.fetch(
+      "http://example.com/api/v1/food-templates"
+    );
+    await expect(listResponse.json()).resolves.toEqual([]);
   });
 
   it("updates settings, body weight, and export data", async () => {

@@ -3,10 +3,13 @@ import type {
   DayPatchInput,
   EntryCreateInput,
   EntryPatchInput,
+  FoodTemplateCreateInput,
+  FoodTemplateLogInput,
+  FoodTemplatePatchInput,
   ProfilePatchInput,
   TargetPatchInput
 } from "@diet/shared";
-import type { DayLog, Entry, Profile, Summary, Target } from "./types";
+import type { DayLog, Entry, FoodTemplate, Profile, Summary, Target } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "/api/v1";
 
@@ -77,6 +80,31 @@ export const api = {
   deleteEntry: (id: string) =>
     apiRequest<{ entry: Entry; day: DayLog }>(`/entries/${id}`, {
       method: "DELETE"
+    }),
+  foodTemplates: () => apiRequest<FoodTemplate[]>("/food-templates"),
+  createFoodTemplate: (data: FoodTemplateCreateInput) =>
+    apiRequest<FoodTemplate>("/food-templates", {
+      method: "POST",
+      body: JSON.stringify(data)
+    }),
+  updateFoodTemplate: (id: string, data: FoodTemplatePatchInput) =>
+    apiRequest<FoodTemplate>(`/food-templates/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data)
+    }),
+  deleteFoodTemplate: (id: string) =>
+    apiRequest<FoodTemplate>(`/food-templates/${id}`, {
+      method: "DELETE"
+    }),
+  logFoodTemplate: (id: string, data: FoodTemplateLogInput) =>
+    apiRequest<{
+      template: FoodTemplate;
+      entry: Entry;
+      day: DayLog;
+      warnings: string[];
+    }>(`/food-templates/${id}/log`, {
+      method: "POST",
+      body: JSON.stringify(data)
     }),
   addBodyWeight: (data: BodyWeightCreateInput) =>
     apiRequest("/body-weights", {

@@ -4,6 +4,9 @@ import {
   type DayPatchInput,
   type DayType,
   type EntryPatchInput,
+  type FoodTemplateCreateInput,
+  type FoodTemplateLogInput,
+  type FoodTemplatePatchInput,
   type MealSlot,
   type ProfilePatchInput,
   type TargetPatchInput,
@@ -80,6 +83,23 @@ interface BodyWeightRow {
   notes: string | null;
   created_at: string;
   updated_at: string;
+}
+
+interface FoodTemplateRow {
+  id: string;
+  meal_slot: MealSlot;
+  name: string;
+  calories_kcal: number;
+  carbs_g: number;
+  protein_g: number;
+  fat_g: number;
+  water_ml: number;
+  notes: string | null;
+  usage_count: number;
+  last_used_at: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
 }
 
 export async function getProfile(db: D1Database): Promise<ProfileRow> {
@@ -384,6 +404,166 @@ export async function deleteEntry(db: D1Database, entryId: string) {
   };
 }
 
+export async function getFoodTemplates(db: D1Database): Promise<FoodTemplateRow[]> {
+  const result = await db
+    .prepare(
+      `SELECT * FROM food_templates
+       WHERE deleted_at IS NULL
+       ORDER BY usage_count DESC, lower(name) ASC`
+    )
+    .all<FoodTemplateRow>();
+  return result.results;
+}
+
+export async function createFoodTemplate(
+  db: D1Database,
+  input: FoodTemplateCreateInput
+): Promise<FoodTemplateRow> {
+  const timestamp = nowIso();
+  const templateId = id("template");
+
+  await db
+    .prepare(
+      `INSERT INTO food_templates (
+        id,
+        meal_slot,
+        name,
+        calories_kcal,
+        carbs_g,
+        protein_g,
+        fat_g,
+        water_ml,
+        notes,
+        usage_count,
+        last_used_at,
+        created_at,
+        updated_at,
+        deleted_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, NULL, ?, ?, NULL)`
+    )
+    .bind(
+      templateId,
+      input.meal_slot,
+      input.name,
+      input.calories_kcal,
+      input.carbs_g,
+      input.protein_g,
+      input.fat_g,
+      input.water_ml,
+      input.notes ?? null,
+      timestamp,
+      timestamp
+    )
+    .run();
+
+  await audit(db, "food_template.created", "food_template", templateId, input.name);
+
+  const template = await getFoodTemplate(db, templateId);
+  if (template == null) throw new Error("food template insert failed");
+  return template;
+}
+
+export async function patchFoodTemplate(
+  db: D1Database,
+  templateId: string,
+  input: FoodTemplatePatchInput
+): Promise<FoodTemplateRow | null> {
+  const existing = await getFoodTemplate(db, templateId);
+  if (existing == null || existing.deleted_at != null) return null;
+
+  const fields: (keyof FoodTemplatePatchInput)[] = [
+    "meal_slot",
+    "name",
+    "calories_kcal",
+    "carbs_g",
+    "protein_g",
+    "fat_g",
+    "water_ml",
+    "notes"
+  ];
+  const updates: string[] = [];
+  const values: BindValue[] = [];
+
+  for (const field of fields) {
+    if (field in input) {
+      updates.push(`${field} = ?`);
+      values.push(input[field] ?? null);
+    }
+  }
+
+  if (updates.length > 0) {
+    await db
+      .prepare(
+        `UPDATE food_templates SET ${updates.join(
+          ", "
+        )}, updated_at = ? WHERE id = ?`
+      )
+      .bind(...values, nowIso(), templateId)
+      .run();
+  }
+
+  const template = await getFoodTemplate(db, templateId);
+  if (template == null) return null;
+  await audit(db, "food_template.updated", "food_template", templateId, template.name);
+  return template;
+}
+
+export async function deleteFoodTemplate(
+  db: D1Database,
+  templateId: string
+): Promise<FoodTemplateRow | null> {
+  const existing = await getFoodTemplate(db, templateId);
+  if (existing == null || existing.deleted_at != null) return null;
+
+  const timestamp = nowIso();
+  await db
+    .prepare("UPDATE food_templates SET deleted_at = ?, updated_at = ? WHERE id = ?")
+    .bind(timestamp, timestamp, templateId)
+    .run();
+
+  await audit(db, "food_template.deleted", "food_template", templateId, existing.name);
+  return getFoodTemplate(db, templateId);
+}
+
+export async function logFoodTemplate(
+  db: D1Database,
+  templateId: string,
+  input: FoodTemplateLogInput
+) {
+  const template = await getFoodTemplate(db, templateId);
+  if (template == null || template.deleted_at != null) return null;
+
+  const result = await createEntry(db, {
+    local_date: input.local_date,
+    logged_at: input.logged_at,
+    meal_slot: input.meal_slot ?? template.meal_slot,
+    name: template.name,
+    calories_kcal: template.calories_kcal,
+    carbs_g: template.carbs_g,
+    protein_g: template.protein_g,
+    fat_g: template.fat_g,
+    water_ml: template.water_ml,
+    notes: template.notes
+  });
+
+  const timestamp = nowIso();
+  await db
+    .prepare(
+      `UPDATE food_templates
+       SET usage_count = usage_count + 1,
+           last_used_at = ?,
+           updated_at = ?
+       WHERE id = ?`
+    )
+    .bind(timestamp, timestamp, templateId)
+    .run();
+
+  return {
+    template: await getFoodTemplate(db, templateId),
+    ...result
+  };
+}
+
 export async function addBodyWeight(
   db: D1Database,
   input: BodyWeightCreateInput
@@ -462,7 +642,7 @@ export async function getSummary(db: D1Database, start: string, end: string) {
 }
 
 export async function exportAllData(db: D1Database) {
-  const [profile, targets, days, entries, bodyWeights, auditEvents] =
+  const [profile, targets, days, entries, bodyWeights, foodTemplates, auditEvents] =
     await Promise.all([
       getProfile(db),
       getTargets(db),
@@ -471,6 +651,9 @@ export async function exportAllData(db: D1Database) {
       db
         .prepare("SELECT * FROM body_weights ORDER BY measured_at")
         .all<BodyWeightRow>(),
+      db
+        .prepare("SELECT * FROM food_templates ORDER BY created_at")
+        .all<FoodTemplateRow>(),
       db
         .prepare("SELECT * FROM audit_events ORDER BY created_at")
         .all<Record<string, string>>()
@@ -483,6 +666,7 @@ export async function exportAllData(db: D1Database) {
     days: days.results,
     entries: entries.results,
     body_weights: bodyWeights.results,
+    food_templates: foodTemplates.results,
     audit_events: auditEvents.results
   };
 }
@@ -586,6 +770,16 @@ async function getEntry(
     .prepare("SELECT * FROM entries WHERE id = ?")
     .bind(entryId)
     .first<EntryRow>();
+}
+
+async function getFoodTemplate(
+  db: D1Database,
+  templateId: string
+): Promise<FoodTemplateRow | null> {
+  return db
+    .prepare("SELECT * FROM food_templates WHERE id = ?")
+    .bind(templateId)
+    .first<FoodTemplateRow>();
 }
 
 async function dayById(db: D1Database, idValue: string): Promise<DayRow | null> {

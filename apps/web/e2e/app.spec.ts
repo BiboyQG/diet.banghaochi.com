@@ -73,6 +73,20 @@ test("covers manual logging, history, settings, and responsive layout", async ({
   await page.getByTestId("today.dayType.training").click();
   await page.getByTestId("today.dayType.rest").click();
   await expect(page.getByText("250 / 2,400 ml")).toBeVisible();
+
+  await page.getByTestId("template.new").click();
+  await page.getByTestId("template.name").fill("Chipotle bowl");
+  await page.getByTestId("template.calories").fill("540");
+  await page.getByTestId("template.carbs").fill("54.5");
+  await page.getByTestId("template.protein").fill("28.5");
+  await page.getByTestId("template.fat").fill("20.5");
+  await page.getByTestId("template.save").click();
+  await expect(page.getByText("Chipotle bowl")).toBeVisible();
+
+  await page.getByTitle("Log Chipotle bowl").click();
+  await expect(page.locator(".entry-row").filter({ hasText: "Chipotle bowl" })).toContainText(
+    "540 kcal"
+  );
 });
 
 async function installApiMock(page: Page) {
@@ -97,6 +111,78 @@ async function installApiMock(page: Page) {
 
     if (method === "GET" && path === "/targets") {
       await fulfill(route, state.targets);
+      return;
+    }
+
+    if (method === "GET" && path === "/food-templates") {
+      await fulfill(route, state.templates);
+      return;
+    }
+
+    if (method === "POST" && path === "/food-templates") {
+      const input = await request.postDataJSON();
+      const template = makeTemplate(input, `template_${state.nextTemplateId++}`);
+      state.templates = [template, ...state.templates];
+      await fulfill(route, template, 201);
+      return;
+    }
+
+    if (method === "PATCH" && path.startsWith("/food-templates/")) {
+      const id = path.split("/").at(-1);
+      const patch = await request.postDataJSON();
+      state.templates = state.templates.map((template) =>
+        template.id === id ? { ...template, ...patch, updated_at: timestamp } : template
+      );
+      await fulfill(route, state.templates.find((template) => template.id === id));
+      return;
+    }
+
+    if (method === "DELETE" && path.startsWith("/food-templates/")) {
+      const id = path.split("/").at(-1);
+      const template = state.templates.find((item) => item.id === id);
+      state.templates = state.templates.filter((item) => item.id !== id);
+      await fulfill(route, { ...template, deleted_at: timestamp });
+      return;
+    }
+
+    if (
+      method === "POST" &&
+      path.startsWith("/food-templates/") &&
+      path.endsWith("/log")
+    ) {
+      const id = path.split("/").at(-2);
+      const input = await request.postDataJSON();
+      const template = state.templates.find((item) => item.id === id)!;
+      const updatedTemplate = {
+        ...template,
+        usage_count: template.usage_count + 1,
+        last_used_at: timestamp,
+        updated_at: timestamp
+      };
+      state.templates = state.templates.map((item) =>
+        item.id === id ? updatedTemplate : item
+      );
+      const entry = makeEntry(
+        {
+          local_date: input.local_date,
+          logged_at: input.logged_at,
+          meal_slot: input.meal_slot ?? template.meal_slot,
+          name: template.name,
+          calories_kcal: template.calories_kcal,
+          carbs_g: template.carbs_g,
+          protein_g: template.protein_g,
+          fat_g: template.fat_g,
+          water_ml: template.water_ml,
+          notes: template.notes
+        },
+        `entry_${state.nextEntryId++}`
+      );
+      state.entries = [entry, ...state.entries];
+      await fulfill(
+        route,
+        { template: updatedTemplate, entry, day: dayResponse(state), warnings: [] },
+        201
+      );
       return;
     }
 
@@ -199,10 +285,12 @@ function createApiState(): ApiState {
       target("rest", 1970, 1700, 160, 2300),
       target("training", 2620, 2100, 250, 3000)
     ],
+    templates: [],
     dayType: "training",
     entries: [],
     bodyWeight: null,
-    nextEntryId: 1
+    nextEntryId: 1,
+    nextTemplateId: 1
   };
 }
 
@@ -282,6 +370,25 @@ function makeEntry(input: EntryInput, id: string): Entry {
   };
 }
 
+function makeTemplate(input: EntryInput, id: string): FoodTemplate {
+  return {
+    id,
+    meal_slot: input.meal_slot,
+    name: input.name,
+    calories_kcal: input.calories_kcal,
+    carbs_g: input.carbs_g,
+    protein_g: input.protein_g,
+    fat_g: input.fat_g,
+    water_ml: input.water_ml,
+    notes: input.notes,
+    usage_count: 0,
+    last_used_at: null,
+    created_at: timestamp,
+    updated_at: timestamp,
+    deleted_at: null
+  };
+}
+
 function target(
   day_type: DayType,
   burn_kcal: number,
@@ -325,10 +432,12 @@ type MealSlot =
 interface ApiState {
   profile: Profile;
   targets: Target[];
+  templates: FoodTemplate[];
   dayType: DayType;
   entries: Entry[];
   bodyWeight: BodyWeight | null;
   nextEntryId: number;
+  nextTemplateId: number;
 }
 
 interface Profile {
@@ -361,6 +470,7 @@ interface Target {
 }
 
 interface EntryInput {
+  local_date?: string;
   logged_at?: string;
   meal_slot: MealSlot;
   name: string;
@@ -375,6 +485,15 @@ interface EntryInput {
 interface Entry extends EntryInput {
   id: string;
   day_log_id: string;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
+}
+
+interface FoodTemplate extends Omit<EntryInput, "logged_at" | "local_date"> {
+  id: string;
+  usage_count: number;
+  last_used_at: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;

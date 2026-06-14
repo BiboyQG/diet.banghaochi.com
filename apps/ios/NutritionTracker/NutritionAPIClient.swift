@@ -10,6 +10,11 @@ struct NutritionAPIClient: Sendable {
     var createEntry: @Sendable (_ entry: EntryCreateRequest) async throws -> EntryMutationResponse
     var patchEntry: @Sendable (_ id: String, _ patch: EntryPatchRequest) async throws -> EntryMutationResponse
     var deleteEntry: @Sendable (_ id: String) async throws -> EntryDeleteResponse
+    var fetchFoodTemplates: @Sendable () async throws -> [FoodTemplate]
+    var createFoodTemplate: @Sendable (_ template: FoodTemplateCreateRequest) async throws -> FoodTemplate
+    var patchFoodTemplate: @Sendable (_ id: String, _ patch: FoodTemplatePatchRequest) async throws -> FoodTemplate
+    var deleteFoodTemplate: @Sendable (_ id: String) async throws -> FoodTemplate
+    var logFoodTemplate: @Sendable (_ id: String, _ request: FoodTemplateLogRequest) async throws -> FoodTemplateLogResponse
     var addBodyWeight: @Sendable (_ weight: BodyWeightCreateRequest) async throws -> BodyWeight
     var fetchSummary: @Sendable (_ start: String, _ end: String) async throws -> Summary
 
@@ -51,6 +56,21 @@ struct NutritionAPIClient: Sendable {
             deleteEntry: { id in
                 try await transport.send("entries/\(id)", method: "DELETE", body: Optional<EmptyBody>.none)
             },
+            fetchFoodTemplates: {
+                try await transport.get("food-templates")
+            },
+            createFoodTemplate: { template in
+                try await transport.send("food-templates", method: "POST", body: template)
+            },
+            patchFoodTemplate: { id, patch in
+                try await transport.send("food-templates/\(id)", method: "PATCH", body: patch)
+            },
+            deleteFoodTemplate: { id in
+                try await transport.send("food-templates/\(id)", method: "DELETE", body: Optional<EmptyBody>.none)
+            },
+            logFoodTemplate: { id, request in
+                try await transport.send("food-templates/\(id)/log", method: "POST", body: request)
+            },
             addBodyWeight: { weight in
                 try await transport.send("body-weights", method: "POST", body: weight)
             },
@@ -64,9 +84,12 @@ struct NutritionAPIClient: Sendable {
         profile: Profile = .fixture,
         targets: [DailyTarget] = DailyTarget.fixtures,
         day: DayLog = .fixture,
+        foodTemplates: [FoodTemplate] = FoodTemplate.fixtures,
         summary: Summary = .fixture
     ) -> NutritionAPIClient {
-        NutritionAPIClient(
+        let state = MockFoodTemplateState(templates: foodTemplates)
+
+        return NutritionAPIClient(
             fetchProfile: { profile },
             patchProfile: { patch in
                 Profile(
@@ -141,6 +164,44 @@ struct NutritionAPIClient: Sendable {
                 entry.deletedAt = entry.updatedAt
                 return EntryDeleteResponse(entry: entry, day: updatedDay.recalculated())
             },
+            fetchFoodTemplates: {
+                await state.all()
+            },
+            createFoodTemplate: { request in
+                await state.create(request)
+            },
+            patchFoodTemplate: { id, patch in
+                try await state.patch(id: id, patch: patch)
+            },
+            deleteFoodTemplate: { id in
+                try await state.delete(id: id)
+            },
+            logFoodTemplate: { id, request in
+                let template = try await state.log(id: id, at: request.loggedAt)
+
+                let entry = Entry.fixture(
+                    from: EntryCreateRequest(
+                        localDate: request.localDate,
+                        loggedAt: request.loggedAt,
+                        mealSlot: request.mealSlot ?? template.mealSlot,
+                        name: template.name,
+                        caloriesKcal: template.caloriesKcal,
+                        carbsG: template.carbsG,
+                        proteinG: template.proteinG,
+                        fatG: template.fatG,
+                        waterMl: template.waterMl,
+                        notes: template.notes
+                    )
+                )
+                var updatedDay = day
+                updatedDay.entries = [entry] + updatedDay.entries
+                return FoodTemplateLogResponse(
+                    template: template,
+                    entry: entry,
+                    day: updatedDay.recalculated(),
+                    warnings: []
+                )
+            },
             addBodyWeight: { request in
                 BodyWeight(
                     id: "weight-\(UUID().uuidString)",
@@ -176,6 +237,61 @@ private extension DayLog {
             actualDeficitKcal: day.burnKcal - day.totals.caloriesKcal
         )
         return day
+    }
+}
+
+private actor MockFoodTemplateState {
+    private var templates: [FoodTemplate]
+
+    init(templates: [FoodTemplate]) {
+        self.templates = templates
+    }
+
+    func all() -> [FoodTemplate] {
+        templates
+    }
+
+    func create(_ request: FoodTemplateCreateRequest) -> FoodTemplate {
+        let template = FoodTemplate.fixture(from: request)
+        templates = [template] + templates
+        return template
+    }
+
+    func patch(id: String, patch: FoodTemplatePatchRequest) throws -> FoodTemplate {
+        guard let index = templates.firstIndex(where: { $0.id == id }) else {
+            throw APIError.httpStatus(404)
+        }
+        var template = templates[index]
+        template.mealSlot = patch.mealSlot ?? template.mealSlot
+        template.name = patch.name ?? template.name
+        template.caloriesKcal = patch.caloriesKcal ?? template.caloriesKcal
+        template.carbsG = patch.carbsG ?? template.carbsG
+        template.proteinG = patch.proteinG ?? template.proteinG
+        template.fatG = patch.fatG ?? template.fatG
+        template.waterMl = patch.waterMl ?? template.waterMl
+        template.notes = patch.notes ?? template.notes
+        templates[index] = template
+        return template
+    }
+
+    func delete(id: String) throws -> FoodTemplate {
+        guard let index = templates.firstIndex(where: { $0.id == id }) else {
+            throw APIError.httpStatus(404)
+        }
+        var template = templates.remove(at: index)
+        template.deletedAt = template.updatedAt
+        return template
+    }
+
+    func log(id: String, at loggedAt: String) throws -> FoodTemplate {
+        guard let index = templates.firstIndex(where: { $0.id == id }) else {
+            throw APIError.httpStatus(404)
+        }
+        var template = templates[index]
+        template.usageCount += 1
+        template.lastUsedAt = loggedAt
+        templates[index] = template
+        return template
     }
 }
 

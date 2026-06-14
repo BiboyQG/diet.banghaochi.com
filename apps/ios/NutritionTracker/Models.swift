@@ -84,6 +84,23 @@ struct BodyWeight: Codable, Equatable, Identifiable, Sendable {
     var updatedAt: String
 }
 
+struct FoodTemplate: Codable, Equatable, Identifiable, Sendable {
+    var id: String
+    var mealSlot: MealSlot
+    var name: String
+    var caloriesKcal: Double
+    var carbsG: Double
+    var proteinG: Double
+    var fatG: Double
+    var waterMl: Double
+    var notes: String?
+    var usageCount: Int
+    var lastUsedAt: String?
+    var createdAt: String
+    var updatedAt: String
+    var deletedAt: String?
+}
+
 struct EntryTotals: Codable, Equatable, Sendable {
     var caloriesKcal: Double
     var carbsG: Double
@@ -207,6 +224,41 @@ struct BodyWeightCreateRequest: Codable, Equatable, Sendable {
     var notes: String?
 }
 
+struct FoodTemplateCreateRequest: Codable, Equatable, Sendable {
+    var mealSlot: MealSlot
+    var name: String
+    var caloriesKcal: Double
+    var carbsG: Double
+    var proteinG: Double
+    var fatG: Double
+    var waterMl: Double
+    var notes: String?
+}
+
+struct FoodTemplatePatchRequest: Codable, Equatable, Sendable {
+    var mealSlot: MealSlot?
+    var name: String?
+    var caloriesKcal: Double?
+    var carbsG: Double?
+    var proteinG: Double?
+    var fatG: Double?
+    var waterMl: Double?
+    var notes: String?
+}
+
+struct FoodTemplateLogRequest: Codable, Equatable, Sendable {
+    var localDate: String
+    var loggedAt: String
+    var mealSlot: MealSlot?
+}
+
+struct FoodTemplateLogResponse: Codable, Equatable, Sendable {
+    var template: FoodTemplate
+    var entry: Entry
+    var day: DayLog
+    var warnings: [String]?
+}
+
 struct EntryDraft: Equatable, Sendable {
     var mealSlot: MealSlot = .lunch
     var name = ""
@@ -248,6 +300,17 @@ struct EntryDraft: Equatable, Sendable {
         notes = entry.notes
     }
 
+    init(template: FoodTemplate) {
+        mealSlot = template.mealSlot
+        name = template.name
+        caloriesKcal = template.caloriesKcal
+        carbsG = template.carbsG
+        proteinG = template.proteinG
+        fatG = template.fatG
+        waterMl = template.waterMl
+        notes = template.notes
+    }
+
     var isValid: Bool {
         !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
             caloriesKcal >= 0 &&
@@ -275,6 +338,83 @@ struct EntryDraft: Equatable, Sendable {
     var patchRequest: EntryPatchRequest {
         EntryPatchRequest(
             loggedAt: nil,
+            mealSlot: mealSlot,
+            name: name.trimmingCharacters(in: .whitespacesAndNewlines),
+            caloriesKcal: caloriesKcal,
+            carbsG: carbsG,
+            proteinG: proteinG,
+            fatG: fatG,
+            waterMl: waterMl,
+            notes: notes
+        )
+    }
+}
+
+struct FoodTemplateDraft: Equatable, Sendable {
+    var mealSlot: MealSlot = .lunch
+    var name = ""
+    var caloriesKcal: Double = 0
+    var carbsG: Double = 0
+    var proteinG: Double = 0
+    var fatG: Double = 0
+    var waterMl: Double = 0
+    var notes: String?
+
+    init(
+        mealSlot: MealSlot = .lunch,
+        name: String = "",
+        caloriesKcal: Double = 0,
+        carbsG: Double = 0,
+        proteinG: Double = 0,
+        fatG: Double = 0,
+        waterMl: Double = 0,
+        notes: String? = nil
+    ) {
+        self.mealSlot = mealSlot
+        self.name = name
+        self.caloriesKcal = caloriesKcal
+        self.carbsG = carbsG
+        self.proteinG = proteinG
+        self.fatG = fatG
+        self.waterMl = waterMl
+        self.notes = notes
+    }
+
+    init(template: FoodTemplate) {
+        mealSlot = template.mealSlot
+        name = template.name
+        caloriesKcal = template.caloriesKcal
+        carbsG = template.carbsG
+        proteinG = template.proteinG
+        fatG = template.fatG
+        waterMl = template.waterMl
+        notes = template.notes
+    }
+
+    var isValid: Bool {
+        !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            caloriesKcal >= 0 &&
+            carbsG >= 0 &&
+            proteinG >= 0 &&
+            fatG >= 0 &&
+            waterMl >= 0
+    }
+
+    var createRequest: FoodTemplateCreateRequest {
+        FoodTemplateCreateRequest(
+            mealSlot: mealSlot,
+            name: name.trimmingCharacters(in: .whitespacesAndNewlines),
+            caloriesKcal: caloriesKcal,
+            carbsG: carbsG,
+            proteinG: proteinG,
+            fatG: fatG,
+            waterMl: waterMl,
+            notes: notes
+        )
+    }
+
+    var patchRequest: FoodTemplatePatchRequest {
+        FoodTemplatePatchRequest(
             mealSlot: mealSlot,
             name: name.trimmingCharacters(in: .whitespacesAndNewlines),
             caloriesKcal: caloriesKcal,

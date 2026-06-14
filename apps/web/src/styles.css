@@ -220,6 +220,10 @@ h3 {
   grid-row: 3;
 }
 
+.template-form-panel {
+  grid-column: 1 / -1;
+}
+
 .panel {
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -626,6 +630,159 @@ a.icon-button {
 
 .quick-row .primary {
   margin-left: auto;
+}
+
+.template-panel {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.mini-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.mini-head h3 {
+  margin-top: 4px;
+}
+
+.mini-head-tools {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.count-pill.subtle {
+  min-width: 26px;
+  height: 26px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 10px;
+}
+
+.template-card {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding: 13px;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition:
+    border-color 0.14s ease,
+    box-shadow 0.14s ease,
+    transform 0.14s ease;
+}
+
+.template-card:hover {
+  border-color: rgba(47, 125, 87, 0.32);
+  box-shadow: 0 8px 20px -16px rgba(29, 33, 27, 0.55);
+  transform: translateY(-1px);
+}
+
+.template-card-top {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.template-card-id {
+  min-width: 0;
+}
+
+.template-card-id strong {
+  display: block;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.template-meta {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.template-card-tools {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.template-card-tools .icon-only {
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+}
+
+.template-macros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.macro-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  color: var(--ink-soft);
+  font-size: 0.74rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.macro-chip.lead {
+  background: var(--green-tint);
+  border-color: rgba(47, 125, 87, 0.22);
+  color: var(--brand);
+}
+
+.template-log {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: 100%;
+  min-height: 38px;
+  margin-top: auto;
+  border-radius: var(--radius);
+  background: var(--brand);
+  color: #fff;
+  border: 1px solid var(--brand-strong);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(23, 58, 42, 0.3);
+}
+
+.template-log:hover {
+  background: var(--brand-strong);
+}
+
+.template-grid .empty-state.compact {
+  grid-column: 1 / -1;
+  padding: 26px 16px;
 }
 
 /* Body weight panel */

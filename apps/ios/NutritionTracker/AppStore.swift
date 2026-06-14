@@ -15,6 +15,7 @@ final class AppStore {
     var targets: [DailyTarget] = []
     var today: DayLog?
     var summary: Summary?
+    var foodTemplates: [FoodTemplate] = []
 
     private let client: NutritionAPIClient
     private let calendar: Calendar
@@ -38,10 +39,12 @@ final class AppStore {
                 LocalDate.addingDays(-13, to: todayLocalDate, calendar: calendar),
                 todayLocalDate
             )
+            async let templates = client.fetchFoodTemplates()
             self.profile = try await profile
             self.targets = try await targets
             self.today = try await today
             self.summary = try await summary
+            self.foodTemplates = try await templates
             state = .loaded
         } catch is CancellationError {
             return
@@ -97,6 +100,53 @@ final class AppStore {
         do {
             let response = try await client.deleteEntry(entry.id)
             today = response.day
+            await refreshSummary()
+        } catch {
+            state = .failed(error.localizedDescription)
+        }
+    }
+
+    func createFoodTemplate(_ draft: FoodTemplateDraft) async {
+        guard draft.isValid else { return }
+        do {
+            let template = try await client.createFoodTemplate(draft.createRequest)
+            upsertFoodTemplate(template)
+        } catch {
+            state = .failed(error.localizedDescription)
+        }
+    }
+
+    func updateFoodTemplate(_ template: FoodTemplate, draft: FoodTemplateDraft) async {
+        guard draft.isValid else { return }
+        do {
+            let updated = try await client.patchFoodTemplate(template.id, draft.patchRequest)
+            upsertFoodTemplate(updated)
+        } catch {
+            state = .failed(error.localizedDescription)
+        }
+    }
+
+    func deleteFoodTemplate(_ template: FoodTemplate) async {
+        do {
+            _ = try await client.deleteFoodTemplate(template.id)
+            foodTemplates.removeAll { $0.id == template.id }
+        } catch {
+            state = .failed(error.localizedDescription)
+        }
+    }
+
+    func logFoodTemplate(_ template: FoodTemplate) async {
+        do {
+            let response = try await client.logFoodTemplate(
+                template.id,
+                FoodTemplateLogRequest(
+                    localDate: todayLocalDate,
+                    loggedAt: ISO8601DateFormatter().string(from: Date()),
+                    mealSlot: nil
+                )
+            )
+            today = response.day
+            upsertFoodTemplate(response.template)
             await refreshSummary()
         } catch {
             state = .failed(error.localizedDescription)
@@ -164,6 +214,17 @@ final class AppStore {
             state = .failed(error.localizedDescription)
         }
     }
+
+    private func upsertFoodTemplate(_ template: FoodTemplate) {
+        foodTemplates.removeAll { $0.id == template.id }
+        foodTemplates.append(template)
+        foodTemplates.sort {
+            if $0.usageCount != $1.usageCount {
+                return $0.usageCount > $1.usageCount
+            }
+            return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+        }
+    }
 }
 
 extension AppStore {
@@ -174,6 +235,7 @@ extension AppStore {
         store.targets = DailyTarget.fixtures
         store.today = .fixture
         store.summary = .fixture
+        store.foodTemplates = FoodTemplate.fixtures
         return store
     }
 }

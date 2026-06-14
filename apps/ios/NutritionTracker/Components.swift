@@ -80,6 +80,24 @@ struct SectionLabel: View {
     }
 }
 
+struct MacroChip: View {
+    let text: String
+    var isLead: Bool = false
+
+    var body: some View {
+        Text(text)
+            .font(.caption2.weight(.bold))
+            .monospacedDigit()
+            .foregroundStyle(isLead ? Color.brand : Color.secondary)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                isLead ? Color.brandLeaf.opacity(0.14) : Color.primary.opacity(0.05),
+                in: Capsule()
+            )
+    }
+}
+
 struct MetricCard: View {
     let title: String
     let value: Double

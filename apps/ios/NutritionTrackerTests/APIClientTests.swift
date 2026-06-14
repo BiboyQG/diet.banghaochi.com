@@ -109,4 +109,35 @@ final class APIClientTests: XCTestCase {
         XCTAssertEqual(bodyWeight.localDate, "2026-06-14")
         XCTAssertEqual(bodyWeight.weightKg, 71.2)
     }
+
+    func testMockClientCreatesAndLogsFoodTemplate() async throws {
+        let client = NutritionAPIClient.mock(day: .fixture, foodTemplates: [])
+
+        let template = try await client.createFoodTemplate(
+            FoodTemplateCreateRequest(
+                mealSlot: .lunch,
+                name: "Chipotle bowl",
+                caloriesKcal: 540,
+                carbsG: 54.5,
+                proteinG: 28.5,
+                fatG: 20.5,
+                waterMl: 0,
+                notes: nil
+            )
+        )
+        XCTAssertEqual(template.name, "Chipotle bowl")
+
+        let logged = try await client.logFoodTemplate(
+            template.id,
+            FoodTemplateLogRequest(
+                localDate: "2026-06-14",
+                loggedAt: "2026-06-14T18:00:00.000Z",
+                mealSlot: nil
+            )
+        )
+
+        XCTAssertEqual(logged.template.usageCount, 1)
+        XCTAssertEqual(logged.entry.name, "Chipotle bowl")
+        XCTAssertEqual(logged.day.entries.first?.caloriesKcal, 540)
+    }
 }

@@ -105,3 +105,109 @@ struct EntryEditorView: View {
     EntryEditorView()
         .environment(AppStore.previewLoaded)
 }
+
+@MainActor
+struct FoodTemplateEditorView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(AppStore.self) private var store
+
+    let template: FoodTemplate?
+    @State private var draft = FoodTemplateDraft()
+    @State private var isSaving = false
+
+    init(template: FoodTemplate? = nil) {
+        self.template = template
+        _draft = State(initialValue: template.map(FoodTemplateDraft.init(template:)) ?? FoodTemplateDraft())
+    }
+
+    private var macroCalories: Double {
+        NutritionCalculations.macroCalories(
+            carbsG: draft.carbsG,
+            proteinG: draft.proteinG,
+            fatG: draft.fatG
+        )
+    }
+
+    private var hasMacroWarning: Bool {
+        NutritionCalculations.shouldWarnMacroCalories(
+            caloriesKcal: draft.caloriesKcal,
+            carbsG: draft.carbsG,
+            proteinG: draft.proteinG,
+            fatG: draft.fatG
+        )
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Picker("Slot", selection: $draft.mealSlot) {
+                        ForEach(MealSlot.allCases) { slot in
+                            Label(slot.title, systemImage: slot.systemImage).tag(slot)
+                        }
+                    }
+                    TextField("Name", text: $draft.name)
+                } header: {
+                    SectionLabel(title: "Common food", systemImage: "bookmark.fill")
+                }
+
+                Section {
+                    numberField("Calories", value: $draft.caloriesKcal, identifier: "template.calories")
+                    numberField("Carbs", value: $draft.carbsG, identifier: "template.carbs")
+                    numberField("Protein", value: $draft.proteinG, identifier: "template.protein")
+                    numberField("Fat", value: $draft.fatG, identifier: "template.fat")
+                    numberField("Water", value: $draft.waterMl, identifier: "template.water")
+                } header: {
+                    SectionLabel(title: "Nutrition", systemImage: "chart.pie.fill")
+                } footer: {
+                    Label("Macro estimate: \(macroCalories.formatted(.number.precision(.fractionLength(0)))) kcal", systemImage: hasMacroWarning ? "exclamationmark.triangle.fill" : "flame.fill")
+                        .font(.footnote.weight(.medium))
+                        .foregroundStyle(hasMacroWarning ? .orange : .secondary)
+                        .padding(.top, 2)
+                }
+            }
+            .navigationTitle(template == nil ? "New common food" : "Edit common food")
+            .navigationBarTitleDisplayMode(.inline)
+            .tint(.brand)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(isSaving ? "Saving" : "Save") {
+                        Task { await save() }
+                    }
+                    .disabled(!draft.isValid || isSaving)
+                    .accessibilityIdentifier("template.save")
+                }
+            }
+        }
+    }
+
+    private func numberField(
+        _ label: String,
+        value: Binding<Double>,
+        identifier: String
+    ) -> some View {
+        TextField(label, value: value, format: .number)
+            .keyboardType(.decimalPad)
+            .accessibilityIdentifier(identifier)
+    }
+
+    private func save() async {
+        guard draft.isValid else { return }
+        isSaving = true
+        if let template {
+            await store.updateFoodTemplate(template, draft: draft)
+        } else {
+            await store.createFoodTemplate(draft)
+        }
+        isSaving = false
+        dismiss()
+    }
+}
+
+#Preview("Common food editor") {
+    FoodTemplateEditorView(template: .chipotle)
+        .environment(AppStore.previewLoaded)
+}

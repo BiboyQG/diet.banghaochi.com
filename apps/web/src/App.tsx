@@ -1,6 +1,7 @@
 import {
   Activity,
   ArrowDownRight,
+  Bookmark,
   CalendarDays,
   Coffee,
   Cookie,
@@ -35,10 +36,18 @@ import {
   shouldWarnMacroCalories,
   type DayType,
   type EntryCreateInput,
+  type FoodTemplateCreateInput,
   type MealSlot
 } from "@diet/shared";
 import { ApiError, api } from "./api";
-import type { DayLog, Entry, Profile, Summary, Target as TargetType } from "./types";
+import type {
+  DayLog,
+  Entry,
+  FoodTemplate,
+  Profile,
+  Summary,
+  Target as TargetType
+} from "./types";
 
 type View = "today" | "history" | "settings";
 
@@ -75,6 +84,17 @@ const emptyEntry = (localDate: string): EntryCreateInput => ({
   notes: null
 });
 
+const emptyTemplate = (): FoodTemplateCreateInput => ({
+  meal_slot: "lunch",
+  name: "",
+  calories_kcal: 0,
+  carbs_g: 0,
+  protein_g: 0,
+  fat_g: 0,
+  water_ml: 0,
+  notes: null
+});
+
 export default function App() {
   const today = useMemo(() => localDate(new Date()), []);
   const [view, setView] = useState<View>("today");
@@ -82,12 +102,17 @@ export default function App() {
   const [targets, setTargets] = useState<TargetType[]>([]);
   const [day, setDay] = useState<DayLog | null>(null);
   const [summary, setSummary] = useState<Summary | null>(null);
+  const [templates, setTemplates] = useState<FoodTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [entryDraft, setEntryDraft] = useState<EntryCreateInput>(emptyEntry(today));
   const [editingId, setEditingId] = useState<string | null>(null);
   const [entryOpen, setEntryOpen] = useState(false);
+  const [templateDraft, setTemplateDraft] =
+    useState<FoodTemplateCreateInput>(emptyTemplate);
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
+  const [templateOpen, setTemplateOpen] = useState(false);
   const [weightDraft, setWeightDraft] = useState("");
 
   const historyRange = useMemo(
@@ -102,16 +127,19 @@ export default function App() {
     setLoading(true);
     setError(null);
     try {
-      const [profileData, targetsData, dayData, summaryData] = await Promise.all([
-        api.profile(),
-        api.targets(),
-        api.day(today),
-        api.summary(historyRange.start, historyRange.end)
-      ]);
+      const [profileData, targetsData, dayData, summaryData, templateData] =
+        await Promise.all([
+          api.profile(),
+          api.targets(),
+          api.day(today),
+          api.summary(historyRange.start, historyRange.end),
+          api.foodTemplates()
+        ]);
       setProfile(profileData);
       setTargets(targetsData);
       setDay(dayData);
       setSummary(summaryData);
+      setTemplates(templateData);
       setWeightDraft(String(dayData.body_weight?.weight_kg ?? profileData.current_weight_kg));
     } catch (err) {
       setError(errorMessage(err));
@@ -217,6 +245,67 @@ export default function App() {
     }
   }
 
+  async function saveTemplate() {
+    if (templateDraft.name.trim().length === 0) return;
+    setSaving(true);
+    setError(null);
+    try {
+      const payload = {
+        ...templateDraft,
+        name: templateDraft.name.trim(),
+        notes: templateDraft.notes?.trim() || null
+      };
+      const template =
+        editingTemplateId == null
+          ? await api.createFoodTemplate(payload)
+          : await api.updateFoodTemplate(editingTemplateId, payload);
+      setTemplates((current) => upsertTemplate(current, template));
+      setTemplateDraft(emptyTemplate());
+      setEditingTemplateId(null);
+      setTemplateOpen(false);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function logTemplate(template: FoodTemplate) {
+    setSaving(true);
+    setError(null);
+    try {
+      const result = await api.logFoodTemplate(template.id, {
+        local_date: today,
+        logged_at: new Date().toISOString()
+      });
+      await refreshDayAndSummary(result.day);
+      setTemplates((current) => upsertTemplate(current, result.template));
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function deleteTemplate(id: string) {
+    if (!window.confirm("Delete this common food?")) return;
+    setSaving(true);
+    setError(null);
+    try {
+      await api.deleteFoodTemplate(id);
+      setTemplates((current) => current.filter((template) => template.id !== id));
+      if (editingTemplateId === id) {
+        setTemplateDraft(emptyTemplate());
+        setEditingTemplateId(null);
+        setTemplateOpen(false);
+      }
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   async function saveWeight() {
     const weight = Number(weightDraft);
     if (!Number.isFinite(weight) || weight <= 0) return;
@@ -237,6 +326,7 @@ export default function App() {
   }
 
   function startEdit(entry: Entry) {
+    setTemplateOpen(false);
     setEditingId(entry.id);
     setEntryDraft({
       local_date: today,
@@ -251,6 +341,29 @@ export default function App() {
       notes: entry.notes
     });
     setEntryOpen(true);
+  }
+
+  function startTemplateEdit(template: FoodTemplate) {
+    setEntryOpen(false);
+    setEditingTemplateId(template.id);
+    setTemplateDraft({
+      meal_slot: template.meal_slot,
+      name: template.name,
+      calories_kcal: template.calories_kcal,
+      carbs_g: template.carbs_g,
+      protein_g: template.protein_g,
+      fat_g: template.fat_g,
+      water_ml: template.water_ml,
+      notes: template.notes
+    });
+    setTemplateOpen(true);
+  }
+
+  function startNewTemplate() {
+    setEntryOpen(false);
+    setEditingTemplateId(null);
+    setTemplateDraft(emptyTemplate());
+    setTemplateOpen(true);
   }
 
   if (loading) {
@@ -283,12 +396,26 @@ export default function App() {
           entryDraft={entryDraft}
           entryOpen={entryOpen}
           editingId={editingId}
+          templates={templates}
+          templateDraft={templateDraft}
+          templateOpen={templateOpen}
+          editingTemplateId={editingTemplateId}
           weightDraft={weightDraft}
           onDayType={changeDayType}
           onAddWater={addWater}
           onEntryDraft={setEntryDraft}
-          onEntryOpen={setEntryOpen}
+          onEntryOpen={(open) => {
+            setEntryOpen(open);
+            if (open) setTemplateOpen(false);
+          }}
           onSaveEntry={saveEntry}
+          onTemplateDraft={setTemplateDraft}
+          onTemplateOpen={setTemplateOpen}
+          onNewTemplate={startNewTemplate}
+          onSaveTemplate={saveTemplate}
+          onLogTemplate={logTemplate}
+          onEditTemplate={startTemplateEdit}
+          onDeleteTemplate={deleteTemplate}
           onEdit={startEdit}
           onDelete={deleteEntry}
           onWeightDraft={setWeightDraft}
@@ -365,12 +492,23 @@ function TodayView(props: {
   entryDraft: EntryCreateInput;
   entryOpen: boolean;
   editingId: string | null;
+  templates: FoodTemplate[];
+  templateDraft: FoodTemplateCreateInput;
+  templateOpen: boolean;
+  editingTemplateId: string | null;
   weightDraft: string;
   onDayType: (dayType: DayType) => void;
   onAddWater: (amount: number) => void;
   onEntryDraft: (draft: EntryCreateInput) => void;
   onEntryOpen: (open: boolean) => void;
   onSaveEntry: () => void;
+  onTemplateDraft: (draft: FoodTemplateCreateInput) => void;
+  onTemplateOpen: (open: boolean) => void;
+  onNewTemplate: () => void;
+  onSaveTemplate: () => void;
+  onLogTemplate: (template: FoodTemplate) => void;
+  onEditTemplate: (template: FoodTemplate) => void;
+  onDeleteTemplate: (id: string) => void;
   onEdit: (entry: Entry) => void;
   onDelete: (id: string) => void;
   onWeightDraft: (value: string) => void;
@@ -521,6 +659,104 @@ function TodayView(props: {
             <span>Quick add</span>
           </button>
         </div>
+
+        <div className="template-panel">
+          <div className="mini-head">
+            <div>
+              <p className="eyebrow">
+                <Bookmark size={13} /> Meal library
+              </p>
+              <h3>Common foods · one-tap log</h3>
+            </div>
+            <div className="mini-head-tools">
+              {props.templates.length > 0 && (
+                <span className="count-pill subtle">{props.templates.length}</span>
+              )}
+              <button
+                className="icon-button"
+                onClick={props.onNewTemplate}
+                type="button"
+                title="Create common food"
+                data-testid="template.new"
+              >
+                <Plus size={17} />
+                <span>New</span>
+              </button>
+            </div>
+          </div>
+          <div className="template-grid">
+            {props.templates.length === 0 && (
+              <div className="empty-state compact">
+                <Bookmark size={20} />
+                <p>No common foods yet</p>
+                <span>Save meals you repeat to log them in one tap.</span>
+              </div>
+            )}
+            {props.templates.map((template) => {
+              const meta = mealMeta[template.meal_slot];
+              const Icon = meta.icon;
+              return (
+                <article className="template-card" key={template.id}>
+                  <div className="template-card-top">
+                    <span className={`meal-icon tone-${meta.tone}`} aria-hidden="true">
+                      <Icon size={18} />
+                    </span>
+                    <div className="template-card-id">
+                      <strong>{template.name}</strong>
+                      <span className="template-meta">
+                        {capitalize(template.meal_slot)}
+                        {template.usage_count > 0 &&
+                          ` · ${formatNumber(template.usage_count)} logged`}
+                      </span>
+                    </div>
+                    <div className="template-card-tools">
+                      <button
+                        className="icon-only"
+                        type="button"
+                        onClick={() => props.onEditTemplate(template)}
+                        title={`Edit ${template.name}`}
+                      >
+                        <Pencil size={16} />
+                      </button>
+                      <button
+                        className="icon-only danger"
+                        type="button"
+                        onClick={() => props.onDeleteTemplate(template.id)}
+                        title={`Delete ${template.name}`}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="template-macros">
+                    <span className="macro-chip lead">
+                      {formatNumber(template.calories_kcal)} kcal
+                    </span>
+                    <span className="macro-chip">{formatNumber(template.protein_g)} P</span>
+                    <span className="macro-chip">{formatNumber(template.carbs_g)} C</span>
+                    <span className="macro-chip">{formatNumber(template.fat_g)} F</span>
+                    {template.water_ml > 0 && (
+                      <span className="macro-chip">
+                        {formatNumber(template.water_ml)} ml
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    className="template-log"
+                    type="button"
+                    onClick={() => props.onLogTemplate(template)}
+                    disabled={props.saving}
+                    title={`Log ${template.name}`}
+                    data-testid={`template.log.${template.id}`}
+                  >
+                    <Plus size={16} />
+                    <span>Log to today</span>
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        </div>
       </section>
 
       <section className="panel side-panel">
@@ -669,6 +905,127 @@ function TodayView(props: {
             >
               <Save size={18} />
               <span>Save entry</span>
+            </button>
+          </div>
+        </section>
+      )}
+
+      {props.templateOpen && (
+        <section className="panel template-form-panel">
+          <div className="section-head">
+            <div>
+              <p className="eyebrow">
+                {props.editingTemplateId == null ? "Create" : "Edit"}
+              </p>
+              <h2>Common food</h2>
+            </div>
+            <button
+              className="ghost"
+              type="button"
+              onClick={() => props.onTemplateOpen(false)}
+            >
+              Cancel
+            </button>
+          </div>
+
+          <div className="form-grid">
+            <label>
+              Meal
+              <select
+                value={props.templateDraft.meal_slot}
+                onChange={(event) =>
+                  props.onTemplateDraft({
+                    ...props.templateDraft,
+                    meal_slot: event.target.value as MealSlot
+                  })
+                }
+              >
+                {mealSlots.map((slot) => (
+                  <option key={slot} value={slot}>
+                    {capitalize(slot)}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="wide">
+              Name
+              <input
+                value={props.templateDraft.name}
+                onChange={(event) =>
+                  props.onTemplateDraft({
+                    ...props.templateDraft,
+                    name: event.target.value
+                  })
+                }
+                data-testid="template.name"
+              />
+            </label>
+            <NumberField
+              label="Calories"
+              value={props.templateDraft.calories_kcal}
+              testId="template.calories"
+              onChange={(calories_kcal) =>
+                props.onTemplateDraft({ ...props.templateDraft, calories_kcal })
+              }
+            />
+            <NumberField
+              label="Carbs"
+              value={props.templateDraft.carbs_g}
+              testId="template.carbs"
+              onChange={(carbs_g) =>
+                props.onTemplateDraft({ ...props.templateDraft, carbs_g })
+              }
+            />
+            <NumberField
+              label="Protein"
+              value={props.templateDraft.protein_g}
+              testId="template.protein"
+              onChange={(protein_g) =>
+                props.onTemplateDraft({ ...props.templateDraft, protein_g })
+              }
+            />
+            <NumberField
+              label="Fat"
+              value={props.templateDraft.fat_g}
+              testId="template.fat"
+              onChange={(fat_g) =>
+                props.onTemplateDraft({ ...props.templateDraft, fat_g })
+              }
+            />
+            <NumberField
+              label="Water"
+              value={props.templateDraft.water_ml}
+              testId="template.water"
+              onChange={(water_ml) =>
+                props.onTemplateDraft({ ...props.templateDraft, water_ml })
+              }
+            />
+          </div>
+
+          <div className="form-footer">
+            <div
+              className={
+                shouldWarnMacroCalories(
+                  props.templateDraft.calories_kcal,
+                  props.templateDraft
+                )
+                  ? "macro-note warn"
+                  : "macro-note"
+              }
+            >
+              <Flame size={15} />
+              Macro estimate:{" "}
+              {formatNumber(calculateMacroCalories(props.templateDraft))} kcal
+            </div>
+            <button
+              className="icon-button primary"
+              type="button"
+              onClick={props.onSaveTemplate}
+              disabled={props.saving || props.templateDraft.name.trim().length === 0}
+              data-testid="template.save"
+            >
+              <Save size={18} />
+              <span>Save common food</span>
             </button>
           </div>
         </section>
@@ -1301,6 +1658,16 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat(undefined, {
     maximumFractionDigits: value % 1 === 0 ? 0 : 1
   }).format(value);
+}
+
+function upsertTemplate(templates: FoodTemplate[], next: FoodTemplate): FoodTemplate[] {
+  const active = templates.filter(
+    (template) => template.id !== next.id && template.deleted_at == null
+  );
+  return [...active, next].sort((a, b) => {
+    if (b.usage_count !== a.usage_count) return b.usage_count - a.usage_count;
+    return a.name.localeCompare(b.name);
+  });
 }
 
 function numberValue(value: string): number {

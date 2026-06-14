@@ -14,13 +14,14 @@ Use this skill when changing the private nutrition tracker in this repository.
 - Shared schemas/calculations: `packages/shared`
 - iOS app: `apps/ios`
 - Runbooks: `docs/runbooks`
+- Reusable food templates: D1 `food_templates`, shared schemas, Worker routes, web API/types, and iOS models/client/store
 
 ## Rules
 
 - Keep Cloudflare Access, Worker API, web, and iOS behavior aligned.
 - Do not commit secrets, local env files, D1 exports, auth cookies, or generated build output.
 - If the iOS `API_BASE_URL`, Access callback URL, or Worker `/auth/ios-callback` behavior changes, update `docs/runbooks/cloudflare-access.md`.
-- If D1 schema or seed data changes, update `apps/worker/migrations` and `docs/runbooks/d1.md`.
+- If D1 schema or seed data changes, update `apps/worker/migrations`, `docs/runbooks/d1.md`, and any cross-platform clients that depend on the schema.
 - If app icons are replaced, update both the source master and derived platform sizes.
 
 ## Common Checks
@@ -32,6 +33,18 @@ npm test
 npm run test:worker
 npm run test:web
 npm run test:e2e
+```
+
+## Deployment
+
+Apply D1 migrations before deploying each environment:
+
+```bash
+cd apps/worker
+npx wrangler d1 migrations apply DB --env staging --remote
+npx wrangler deploy --env staging
+npx wrangler d1 migrations apply DB --env production --remote
+npx wrangler deploy --env production
 ```
 
 For iOS, prefer XcodeBuildMCP. If using CLI:

@@ -2,6 +2,12 @@
 
 Private nutrition tracker for `diet.banghaochi.com`.
 
+## Features
+
+- Daily nutrition, water, weight, and target tracking.
+- Reusable food templates for common meals across web and iOS.
+- Cloudflare Access-protected web app and API, with iOS login through `/auth/ios-callback`.
+
 ## Local Setup
 
 ```bash
@@ -12,6 +18,8 @@ npm run dev
 ```
 
 The web app runs on `http://127.0.0.1:5173` and proxies `/api` to the local Worker on `http://127.0.0.1:8787`.
+
+D1 migrations include seed data for reusable food templates, including the default Chipotle bowl.
 
 ## Checks
 
@@ -43,9 +51,9 @@ The web app is deployed as static assets from the Worker, so `diet.banghaochi.co
 ```bash
 npm run build --workspace @diet/web
 cd apps/worker
-npx wrangler d1 migrations apply DB --remote --env staging
+npx wrangler d1 migrations apply DB --env staging --remote
 npx wrangler deploy --env staging
-npx wrangler d1 migrations apply DB --remote --env production
+npx wrangler d1 migrations apply DB --env production --remote
 npx wrangler deploy --env production
 ```
 

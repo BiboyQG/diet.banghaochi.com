@@ -69,6 +69,29 @@ export const entryPatchSchema = entryCreateSchema
   .partial()
   .strict();
 
+export const foodTemplateCreateSchema = z
+  .object({
+    meal_slot: mealSlotSchema,
+    name: z.string().min(1).max(160),
+    calories_kcal: z.number().nonnegative().max(10000),
+    carbs_g: z.number().nonnegative().max(2000),
+    protein_g: z.number().nonnegative().max(1000),
+    fat_g: z.number().nonnegative().max(1000),
+    water_ml: z.number().nonnegative().max(20000),
+    notes: z.string().max(2000).nullable().optional()
+  })
+  .strict();
+
+export const foodTemplatePatchSchema = foodTemplateCreateSchema.partial().strict();
+
+export const foodTemplateLogSchema = z
+  .object({
+    local_date: localDateSchema,
+    logged_at: z.string().datetime().optional(),
+    meal_slot: mealSlotSchema.optional()
+  })
+  .strict();
+
 export const bodyWeightCreateSchema = z
   .object({
     local_date: localDateSchema,
@@ -83,4 +106,7 @@ export type TargetPatchInput = z.infer<typeof targetPatchSchema>;
 export type DayPatchInput = z.infer<typeof dayPatchSchema>;
 export type EntryCreateInput = z.infer<typeof entryCreateSchema>;
 export type EntryPatchInput = z.infer<typeof entryPatchSchema>;
+export type FoodTemplateCreateInput = z.infer<typeof foodTemplateCreateSchema>;
+export type FoodTemplatePatchInput = z.infer<typeof foodTemplatePatchSchema>;
+export type FoodTemplateLogInput = z.infer<typeof foodTemplateLogSchema>;
 export type BodyWeightCreateInput = z.infer<typeof bodyWeightCreateSchema>;

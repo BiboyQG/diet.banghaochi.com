@@ -64,6 +64,9 @@ function installFetchMock() {
         target("training", 2620, 2100, 3000)
       ]);
     }
+    if (url.endsWith("/food-templates")) {
+      return json([]);
+    }
     if (url.includes("/summary")) {
       return json({
         start: localDate,
