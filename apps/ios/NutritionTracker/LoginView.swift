@@ -8,7 +8,7 @@ struct LoginView: View {
         VStack(spacing: 22) {
             Image(systemName: "lock.shield")
                 .font(.system(size: 48, weight: .semibold))
-                .foregroundStyle(.blue)
+                .foregroundStyle(.brand)
 
             VStack(spacing: 8) {
                 Text("Diet Tracker")

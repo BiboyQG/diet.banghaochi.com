@@ -9,6 +9,7 @@ struct NutritionTrackerApp: App {
             AppView()
                 .environment(environment.auth)
                 .environment(environment.store)
+                .tint(.brand)
         }
     }
 }

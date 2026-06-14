@@ -87,15 +87,16 @@ struct TodayView: View {
                     ProgressMetric(title: "Fat", value: day.totals.fatG, target: day.fatTargetG, unit: "g")
                     ProgressMetric(title: "Water", value: day.totals.waterMl, target: day.waterTargetMl, unit: "ml")
                 }
-                .padding()
-                .background(.background, in: RoundedRectangle(cornerRadius: 14))
+                .card()
 
                 quickActions
                 bodyWeight(day)
                 entries(day.entries)
             }
             .padding()
+            .padding(.bottom, 24)
         }
+        .background(Color(.systemGroupedBackground))
         .toolbar {
             Button {
                 sheet = .entry(nil)
@@ -112,16 +113,27 @@ struct TodayView: View {
     private func dayTypeControl(_ day: DayLog) -> some View {
         HStack(spacing: 10) {
             ForEach(DayType.allCases) { dayType in
-                Button {
-                    Task { await store.setDayType(dayType) }
-                } label: {
-                    Text(dayType.title)
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(day.dayType == dayType ? .green : .gray)
-                .accessibilityIdentifier("today.dayType.\(dayType.rawValue)")
+                dayTypeButton(dayType, isSelected: day.dayType == dayType)
             }
+        }
+    }
+
+    @ViewBuilder
+    private func dayTypeButton(_ dayType: DayType, isSelected: Bool) -> some View {
+        let button = Button {
+            Task { await store.setDayType(dayType) }
+        } label: {
+            Text(dayType.title)
+                .fontWeight(.semibold)
+                .frame(maxWidth: .infinity)
+        }
+        .controlSize(.large)
+        .accessibilityIdentifier("today.dayType.\(dayType.rawValue)")
+
+        if isSelected {
+            button.buttonStyle(.borderedProminent)
+        } else {
+            button.buttonStyle(.bordered).tint(.secondary)
         }
     }
 
@@ -161,9 +173,7 @@ struct TodayView: View {
             }
             .buttonStyle(.bordered)
         }
-        .padding()
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(.background, in: RoundedRectangle(cornerRadius: 14))
+        .card()
     }
 
     private func entries(_ entries: [Entry]) -> some View {
@@ -174,7 +184,7 @@ struct TodayView: View {
                 Text("No entries yet")
                     .foregroundStyle(.secondary)
             } else {
-                ForEach(entries) { entry in
+                ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
                     HStack(alignment: .firstTextBaseline) {
                         VStack(alignment: .leading) {
                             Text(entry.name)
@@ -202,12 +212,13 @@ struct TodayView: View {
                         .buttonStyle(.borderless)
                         .accessibilityIdentifier("entry.delete.\(entry.id)")
                     }
-                    Divider()
+                    if index < entries.count - 1 {
+                        Divider()
+                    }
                 }
             }
         }
-        .padding()
-        .background(.background, in: RoundedRectangle(cornerRadius: 14))
+        .card()
     }
 }
 

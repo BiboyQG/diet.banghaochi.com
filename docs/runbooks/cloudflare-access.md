@@ -6,6 +6,7 @@
 - Staging application: `Diet Tracker Staging` for `https://diet-staging.banghaochi.com/*`
 - Identity provider: Cloudflare Access One-time PIN
 - Allow policy: `m13971212844@gmail.com`
+- Session duration: `720h` (30 days)
 - App cookie setting: `http_only_cookie_attribute=false` so the native iOS login flow can read the application-domain `CF_Authorization` cookie
 
 The Worker redirects `/auth/ios-callback` to `diettracker://access/callback` after Access login so `ASWebAuthenticationSession` can complete. When Access has issued `CF_Authorization`, the Worker appends it as `cf_authorization` with an optional `expires_at` value so iOS can persist a usable API session in Keychain.

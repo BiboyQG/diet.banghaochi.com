@@ -1,5 +1,27 @@
 import SwiftUI
 
+extension ShapeStyle where Self == Color {
+    static var brand: Color { Color(red: 0.18, green: 0.48, blue: 0.33) }
+}
+
+private struct CardSurface: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .padding()
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                Color(.secondarySystemGroupedBackground),
+                in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+            )
+    }
+}
+
+extension View {
+    func card() -> some View {
+        modifier(CardSurface())
+    }
+}
+
 struct MetricCard: View {
     let title: String
     let value: Double
@@ -22,7 +44,10 @@ struct MetricCard: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .background(
+            Color(.secondarySystemGroupedBackground),
+            in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+        )
     }
 }
 
@@ -47,7 +72,7 @@ struct ProgressMetric: View {
             .font(.subheadline)
 
             ProgressView(value: progress)
-                .tint(progress > 1 ? .red : .green)
+                .tint(progress > 1 ? .red : .brand)
         }
         .accessibilityElement(children: .combine)
     }
