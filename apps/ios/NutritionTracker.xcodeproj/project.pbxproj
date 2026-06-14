@@ -61,7 +61,7 @@
 		D2F28838CFE5DA644938787D /* BodyWeightEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BodyWeightEditorView.swift; sourceTree = "<group>"; };
 		E282A1ABDD1A8C53BC77DEEC /* CalculationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalculationTests.swift; sourceTree = "<group>"; };
 		EBFE33C5CD6551804F2D2FDC /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		F7A7778041A35A7C6ECBF099 /* NutritionTracker.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NutritionTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F7A7778041A35A7C6ECBF099 /* NutritionTracker.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = NutritionTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FAD365596580E50B390E3F63 /* NutritionAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionAPIClient.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -167,9 +167,6 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
-					82DAF825C2EF3FF5EB054D3F = {
-						DevelopmentTeam = "";
-					};
 					A573A164085B7D59BBAA53CB = {
 						DevelopmentTeam = "";
 					};
@@ -257,6 +254,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = ZP2ZXMAVBW;
 				INFOPLIST_FILE = NutritionTracker/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -275,6 +273,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = ZP2ZXMAVBW;
 				INFOPLIST_FILE = NutritionTracker/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (

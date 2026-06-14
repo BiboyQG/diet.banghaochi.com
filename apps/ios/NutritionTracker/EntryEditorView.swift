@@ -34,28 +34,35 @@ struct EntryEditorView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Meal") {
+                Section {
                     Picker("Slot", selection: $draft.mealSlot) {
                         ForEach(MealSlot.allCases) { slot in
-                            Text(slot.title).tag(slot)
+                            Label(slot.title, systemImage: slot.systemImage).tag(slot)
                         }
                     }
                     TextField("Name", text: $draft.name)
+                } header: {
+                    SectionLabel(title: "Meal", systemImage: "fork.knife")
                 }
 
-                Section("Nutrition") {
+                Section {
                     numberField("Calories", value: $draft.caloriesKcal, identifier: "entry.calories")
                     numberField("Carbs", value: $draft.carbsG, identifier: "entry.carbs")
                     numberField("Protein", value: $draft.proteinG, identifier: "entry.protein")
                     numberField("Fat", value: $draft.fatG, identifier: "entry.fat")
                     numberField("Water", value: $draft.waterMl, identifier: "entry.water")
-
-                    Text("Macro estimate: \(macroCalories.formatted(.number.precision(.fractionLength(0)))) kcal")
+                } header: {
+                    SectionLabel(title: "Nutrition", systemImage: "chart.pie.fill")
+                } footer: {
+                    Label("Macro estimate: \(macroCalories.formatted(.number.precision(.fractionLength(0)))) kcal", systemImage: hasMacroWarning ? "exclamationmark.triangle.fill" : "flame.fill")
+                        .font(.footnote.weight(.medium))
                         .foregroundStyle(hasMacroWarning ? .orange : .secondary)
+                        .padding(.top, 2)
                 }
             }
             .navigationTitle(entry == nil ? "Add entry" : "Edit entry")
             .navigationBarTitleDisplayMode(.inline)
+            .tint(.brand)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

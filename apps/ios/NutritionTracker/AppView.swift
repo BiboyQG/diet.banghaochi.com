@@ -58,6 +58,7 @@ struct AppView: View {
                         .tag(tab)
                     }
                 }
+                .tint(.brand)
             }
         }
         .task {

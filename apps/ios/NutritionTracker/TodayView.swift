@@ -66,29 +66,11 @@ struct TodayView: View {
 
     private func todayContent(_ day: DayLog) -> some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 16) {
                 dayTypeControl(day)
-
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 140), spacing: 12)], spacing: 12) {
-                    MetricCard(title: "Eaten", value: day.totals.caloriesKcal, unit: "kcal")
-                    MetricCard(
-                        title: "Remaining",
-                        value: day.calculated.remainingIntakeKcal,
-                        unit: "kcal",
-                        tint: day.calculated.remainingIntakeKcal < 0 ? .red : .green
-                    )
-                    MetricCard(title: "Deficit", value: day.calculated.actualDeficitKcal, unit: "kcal")
-                }
-
-                VStack(spacing: 14) {
-                    ProgressMetric(title: "Calories", value: day.totals.caloriesKcal, target: day.intakeTargetKcal, unit: "kcal")
-                    ProgressMetric(title: "Carbs", value: day.totals.carbsG, target: day.carbsTargetG, unit: "g")
-                    ProgressMetric(title: "Protein", value: day.totals.proteinG, target: day.proteinTargetG, unit: "g")
-                    ProgressMetric(title: "Fat", value: day.totals.fatG, target: day.fatTargetG, unit: "g")
-                    ProgressMetric(title: "Water", value: day.totals.waterMl, target: day.waterTargetMl, unit: "ml")
-                }
-                .card()
-
+                calorieHero(day)
+                statCards(day)
+                macroCard(day)
                 quickActions
                 bodyWeight(day)
                 entries(day.entries)
@@ -111,114 +93,292 @@ struct TodayView: View {
     }
 
     private func dayTypeControl(_ day: DayLog) -> some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 4) {
             ForEach(DayType.allCases) { dayType in
-                dayTypeButton(dayType, isSelected: day.dayType == dayType)
+                let isSelected = day.dayType == dayType
+                Button {
+                    Task { await store.setDayType(dayType) }
+                } label: {
+                    Label(dayType.title, systemImage: dayType.systemImage)
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 9)
+                        .foregroundStyle(isSelected ? Color.white : Color.primary)
+                        .background(
+                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                .fill(isSelected ? Color.brand : Color.clear)
+                        )
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("today.dayType.\(dayType.rawValue)")
             }
+        }
+        .padding(4)
+        .background(
+            Color(.secondarySystemGroupedBackground),
+            in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.06))
+        )
+    }
+
+    private func calorieHero(_ day: DayLog) -> some View {
+        let remaining = day.calculated.remainingIntakeKcal
+        let eaten = day.totals.caloriesKcal
+        let target = day.intakeTargetKcal
+        let isOver = remaining < 0
+        let fraction = min(max(eaten / max(target, 1), 0), 1)
+
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .bottom) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(isOver ? "OVER BUDGET" : "REMAINING")
+                        .font(.caption2.weight(.bold))
+                        .tracking(0.5)
+                        .foregroundStyle(.secondary)
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text(abs(remaining), format: .number.precision(.fractionLength(0)))
+                            .font(.system(size: 40, weight: .bold, design: .rounded))
+                            .foregroundStyle(isOver ? Color.red : Color.brandDeep)
+                            .monospacedDigit()
+                        Text("kcal")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                Spacer()
+                HStack(spacing: 5) {
+                    Image(systemName: "flame.fill")
+                        .foregroundStyle(.brandLeaf)
+                    Text("\(eaten.formatted(.number.precision(.fractionLength(0)))) / \(target.formatted(.number.precision(.fractionLength(0))))")
+                        .monospacedDigit()
+                }
+                .font(.footnote.weight(.semibold))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Color(.secondarySystemGroupedBackground), in: Capsule())
+            }
+
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Color.brand.opacity(0.14))
+                    Capsule()
+                        .fill(
+                            LinearGradient(
+                                colors: isOver ? [.red.opacity(0.8), .red] : [.brandLeaf, .brand],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: max(8, geo.size.width * fraction))
+                }
+            }
+            .frame(height: 11)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            LinearGradient(
+                colors: isOver
+                    ? [Color.red.opacity(0.08), Color(.secondarySystemGroupedBackground)]
+                    : [Color.brandLeaf.opacity(0.13), Color(.secondarySystemGroupedBackground)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            ),
+            in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder((isOver ? Color.red : Color.brand).opacity(0.18))
+        )
+    }
+
+    private func statCards(_ day: DayLog) -> some View {
+        HStack(spacing: 10) {
+            MetricCard(title: "Eaten", value: day.totals.caloriesKcal, unit: "kcal", systemImage: "fork.knife", tint: .brand)
+            MetricCard(title: "Deficit", value: day.calculated.actualDeficitKcal, unit: "kcal", systemImage: "arrow.down.right", tint: .brandLeaf)
+            MetricCard(title: "Burn", value: day.burnKcal, unit: "kcal", systemImage: "target", tint: .macroBlue)
         }
     }
 
-    @ViewBuilder
-    private func dayTypeButton(_ dayType: DayType, isSelected: Bool) -> some View {
-        let button = Button {
-            Task { await store.setDayType(dayType) }
-        } label: {
-            Text(dayType.title)
-                .fontWeight(.semibold)
-                .frame(maxWidth: .infinity)
+    private func macroCard(_ day: DayLog) -> some View {
+        VStack(spacing: 14) {
+            ProgressMetric(title: "Carbs", value: day.totals.carbsG, target: day.carbsTargetG, unit: "g", systemImage: "laurel.leading", tint: .macroAmber)
+            ProgressMetric(title: "Protein", value: day.totals.proteinG, target: day.proteinTargetG, unit: "g", systemImage: "bolt.fill", tint: .brandLeaf)
+            ProgressMetric(title: "Fat", value: day.totals.fatG, target: day.fatTargetG, unit: "g", systemImage: "circle.hexagongrid.fill", tint: .macroPlum)
+            ProgressMetric(title: "Water", value: day.totals.waterMl, target: day.waterTargetMl, unit: "ml", systemImage: "drop.fill", tint: .macroBlue)
         }
-        .controlSize(.large)
-        .accessibilityIdentifier("today.dayType.\(dayType.rawValue)")
-
-        if isSelected {
-            button.buttonStyle(.borderedProminent)
-        } else {
-            button.buttonStyle(.bordered).tint(.secondary)
-        }
+        .card()
     }
 
     private var quickActions: some View {
-        HStack {
+        HStack(spacing: 10) {
             Button {
                 Task { await store.addWater(250) }
             } label: {
-                Label("+250 ml", systemImage: "drop")
+                Label("250 ml", systemImage: "drop")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity)
             }
+            .buttonStyle(.bordered)
+            .tint(.macroBlue)
 
             Button {
                 Task { await store.addWater(500) }
             } label: {
-                Label("+500 ml", systemImage: "drop.fill")
+                Label("500 ml", systemImage: "drop.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity)
             }
+            .buttonStyle(.bordered)
+            .tint(.macroBlue)
 
             Button {
                 sheet = .entry(nil)
             } label: {
                 Label("Quick add", systemImage: "plus")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity)
             }
+            .buttonStyle(.borderedProminent)
+            .tint(.brand)
         }
-        .buttonStyle(.bordered)
+        .controlSize(.large)
     }
 
     private func bodyWeight(_ day: DayLog) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Body weight")
-                .font(.headline)
-            Text(day.bodyWeight.map { "\($0.weightKg.formatted(.number.precision(.fractionLength(1)))) kg" } ?? "No weight logged")
-                .foregroundStyle(.secondary)
+        HStack(alignment: .center, spacing: 14) {
+            Image(systemName: "scalemass.fill")
+                .font(.title3)
+                .foregroundStyle(.brand)
+                .frame(width: 42, height: 42)
+                .background(Color.brand.opacity(0.12), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("BODY WEIGHT")
+                    .font(.caption2.weight(.bold))
+                    .tracking(0.4)
+                    .foregroundStyle(.secondary)
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
+                    Text(day.bodyWeight.map { $0.weightKg.formatted(.number.precision(.fractionLength(1))) } ?? "--")
+                        .font(.title3.weight(.bold))
+                        .monospacedDigit()
+                    Text("kg")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            Spacer()
+
             Button {
                 sheet = .bodyWeight(day.bodyWeight?.weightKg ?? store.profile?.currentWeightKg ?? 0)
             } label: {
-                Label(day.bodyWeight == nil ? "Log weight" : "Update weight", systemImage: "scalemass")
+                Label(day.bodyWeight == nil ? "Log" : "Update", systemImage: "square.and.pencil")
+                    .font(.subheadline.weight(.semibold))
             }
             .buttonStyle(.bordered)
+            .tint(.brand)
         }
         .card()
     }
 
     private func entries(_ entries: [Entry]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Entries")
-                .font(.headline)
-            if entries.isEmpty {
-                Text("No entries yet")
-                    .foregroundStyle(.secondary)
-            } else {
-                ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
-                    HStack(alignment: .firstTextBaseline) {
-                        VStack(alignment: .leading) {
-                            Text(entry.name)
-                                .fontWeight(.semibold)
-                            Text(entry.mealSlot.title)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        Spacer()
-                        Text("\(entry.caloriesKcal.formatted(.number.precision(.fractionLength(0)))) kcal")
-                            .fontWeight(.semibold)
-                        Button {
-                            sheet = .entry(entry)
-                        } label: {
-                            Image(systemName: "pencil")
-                        }
-                        .buttonStyle(.borderless)
-                        .accessibilityIdentifier("entry.edit.\(entry.id)")
+            HStack {
+                SectionLabel(title: "Entries", systemImage: "list.bullet.rectangle")
+                Spacer()
+                Text("\(entries.count)")
+                    .font(.caption.weight(.bold))
+                    .monospacedDigit()
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 3)
+                    .background(Color.brand.opacity(0.12), in: Capsule())
+                    .foregroundStyle(.brand)
+            }
 
-                        Button(role: .destructive) {
-                            entryPendingDelete = entry
-                        } label: {
-                            Image(systemName: "trash")
+            if entries.isEmpty {
+                VStack(spacing: 6) {
+                    Image(systemName: "fork.knife")
+                        .font(.title2)
+                        .foregroundStyle(.tertiary)
+                    Text("No entries yet")
+                        .font(.subheadline.weight(.semibold))
+                    Text("Use Quick add to log your first meal.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 22)
+            } else {
+                VStack(spacing: 0) {
+                    ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
+                        entryRow(entry)
+                        if index < entries.count - 1 {
+                            Divider().padding(.leading, 48)
                         }
-                        .buttonStyle(.borderless)
-                        .accessibilityIdentifier("entry.delete.\(entry.id)")
-                    }
-                    if index < entries.count - 1 {
-                        Divider()
                     }
                 }
             }
         }
         .card()
+    }
+
+    private func entryRow(_ entry: Entry) -> some View {
+        HStack(spacing: 12) {
+            Image(systemName: entry.mealSlot.systemImage)
+                .font(.subheadline)
+                .foregroundStyle(entry.mealSlot.tint)
+                .frame(width: 36, height: 36)
+                .background(entry.mealSlot.tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(entry.name)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(entry.mealSlot.title)
+                    if entry.caloriesKcal > 0 {
+                        Text("·")
+                        Text("\(entry.caloriesKcal.formatted(.number.precision(.fractionLength(0)))) kcal")
+                    }
+                    if entry.waterMl > 0 {
+                        Text("·")
+                        Text("\(entry.waterMl.formatted(.number.precision(.fractionLength(0)))) ml")
+                    }
+                }
+                .font(.caption)
+                .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 4)
+
+            HStack(spacing: 2) {
+                Button {
+                    sheet = .entry(entry)
+                } label: {
+                    Image(systemName: "pencil")
+                        .frame(width: 34, height: 34)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.borderless)
+                .foregroundStyle(.brand)
+                .accessibilityIdentifier("entry.edit.\(entry.id)")
+
+                Button(role: .destructive) {
+                    entryPendingDelete = entry
+                } label: {
+                    Image(systemName: "trash")
+                        .frame(width: 34, height: 34)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.borderless)
+                .accessibilityIdentifier("entry.delete.\(entry.id)")
+            }
+        }
+        .padding(.vertical, 8)
     }
 }
 

@@ -1,14 +1,33 @@
 import {
   Activity,
+  ArrowDownRight,
+  CalendarDays,
+  Coffee,
+  Cookie,
   Download,
-  Droplets,
+  Drumstick,
+  Dumbbell,
+  Flame,
+  GlassWater,
   History,
+  Droplet,
+  Droplets,
+  Moon,
+  Nut,
   Pencil,
+  Pill,
   Plus,
+  Salad,
   Save,
+  Scale,
   Settings,
-  Trash2
+  Soup,
+  Target,
+  Trash2,
+  Utensils,
+  Wheat
 } from "lucide-react";
+import type { ComponentType } from "react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   calculateBmr,
@@ -19,7 +38,7 @@ import {
   type MealSlot
 } from "@diet/shared";
 import { ApiError, api } from "./api";
-import type { DayLog, Entry, Profile, Summary, Target } from "./types";
+import type { DayLog, Entry, Profile, Summary, Target as TargetType } from "./types";
 
 type View = "today" | "history" | "settings";
 
@@ -32,6 +51,16 @@ const mealSlots: MealSlot[] = [
   "supplement",
   "other"
 ];
+
+const mealMeta: Record<MealSlot, { icon: ComponentType<{ size?: number }>; tone: string }> = {
+  breakfast: { icon: Coffee, tone: "amber" },
+  lunch: { icon: Utensils, tone: "green" },
+  dinner: { icon: Soup, tone: "plum" },
+  snack: { icon: Cookie, tone: "amber" },
+  drink: { icon: GlassWater, tone: "blue" },
+  supplement: { icon: Pill, tone: "green" },
+  other: { icon: Salad, tone: "green" }
+};
 
 const emptyEntry = (localDate: string): EntryCreateInput => ({
   local_date: localDate,
@@ -50,7 +79,7 @@ export default function App() {
   const today = useMemo(() => localDate(new Date()), []);
   const [view, setView] = useState<View>("today");
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [targets, setTargets] = useState<Target[]>([]);
+  const [targets, setTargets] = useState<TargetType[]>([]);
   const [day, setDay] = useState<DayLog | null>(null);
   const [summary, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -227,48 +256,19 @@ export default function App() {
   if (loading) {
     return (
       <main className="app-shell">
-        <div className="loading">Loading tracker...</div>
+        <Topbar today={today} view={view} onView={setView} />
+        <div className="loading-grid" aria-busy="true">
+          <div className="skeleton-panel" />
+          <div className="skeleton-panel narrow" />
+          <div className="skeleton-panel" />
+        </div>
       </main>
     );
   }
 
   return (
     <main className="app-shell">
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">{today}</p>
-          <h1>Diet Tracker</h1>
-        </div>
-        <nav className="tabs" aria-label="Primary">
-          <button
-            className={view === "today" ? "active" : ""}
-            onClick={() => setView("today")}
-            type="button"
-            title="Today"
-          >
-            <Activity size={18} />
-            <span>Today</span>
-          </button>
-          <button
-            className={view === "history" ? "active" : ""}
-            onClick={() => setView("history")}
-            type="button"
-            title="History"
-          >
-            <History size={18} />
-            <span>History</span>
-          </button>
-          <button
-            className={view === "settings" ? "active" : ""}
-            onClick={() => setView("settings")}
-            type="button"
-            title="Settings"
-          >
-            <Settings size={18} />
-            <span>Settings</span>
-          </button>
-        </nav>
-      </header>
+      <Topbar today={today} view={view} onView={setView} />
 
       {error != null && (
         <div className="error" role="alert">
@@ -311,6 +311,54 @@ export default function App() {
   );
 }
 
+function Topbar({
+  today,
+  view,
+  onView
+}: {
+  today: string;
+  view: View;
+  onView: (view: View) => void;
+}) {
+  const tabs: { id: View; label: string; icon: ComponentType<{ size?: number }> }[] = [
+    { id: "today", label: "Today", icon: Activity },
+    { id: "history", label: "History", icon: History },
+    { id: "settings", label: "Settings", icon: Settings }
+  ];
+  return (
+    <header className="topbar">
+      <div className="brand">
+        <span className="brand-mark" aria-hidden="true">
+          <Salad size={20} />
+        </span>
+        <div>
+          <p className="eyebrow">
+            <CalendarDays size={13} /> {formatLongDate(today)}
+          </p>
+          <h1>Diet Tracker</h1>
+        </div>
+      </div>
+      <nav className="tabs" aria-label="Primary">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              className={view === tab.id ? "active" : ""}
+              onClick={() => onView(tab.id)}
+              type="button"
+              title={tab.label}
+            >
+              <Icon size={18} />
+              <span>{tab.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+    </header>
+  );
+}
+
 function TodayView(props: {
   day: DayLog;
   saving: boolean;
@@ -334,10 +382,15 @@ function TodayView(props: {
     props.entryDraft.calories_kcal,
     props.entryDraft
   );
+  const remaining = day.calculated.remaining_intake_kcal;
+  const eaten = day.totals.calories_kcal;
+  const target = day.intake_target_kcal;
+  const intakePct = Math.round((eaten / Math.max(target, 1)) * 100);
+  const over = remaining < 0;
 
   return (
     <div className="tracker-grid">
-      <section className="panel primary-panel">
+      <section className="panel summary-panel">
         <div className="section-head">
           <div>
             <p className="eyebrow">Today</p>
@@ -350,7 +403,7 @@ function TodayView(props: {
               type="button"
               data-testid="today.dayType.training"
             >
-              Training
+              <Dumbbell size={15} /> Training
             </button>
             <button
               className={day.day_type === "rest" ? "selected" : ""}
@@ -358,60 +411,83 @@ function TodayView(props: {
               type="button"
               data-testid="today.dayType.rest"
             >
-              Rest
+              <Moon size={15} /> Rest
             </button>
           </div>
         </div>
 
-        <div className="metric-grid">
-          <Metric
-            label="Eaten"
-            value={formatNumber(day.totals.calories_kcal)}
-            suffix="kcal"
-          />
-          <Metric
-            label="Remaining"
-            value={formatNumber(day.calculated.remaining_intake_kcal)}
-            suffix="kcal"
-            tone={day.calculated.remaining_intake_kcal < 0 ? "danger" : "good"}
-          />
-          <Metric
+        <div className={`calorie-hero ${over ? "over" : ""}`}>
+          <div className="calorie-hero-head">
+            <div>
+              <p className="eyebrow">{over ? "Over budget" : "Remaining"}</p>
+              <strong className="calorie-value">
+                {formatNumber(Math.abs(remaining))}
+                <small>kcal</small>
+              </strong>
+            </div>
+            <div className="calorie-sub">
+              <Flame size={15} />
+              <span>
+                {formatNumber(eaten)} / {formatNumber(target)} kcal
+              </span>
+            </div>
+          </div>
+          <div className="hero-bar" aria-label="Calories progress">
+            <span style={{ width: `${Math.min(100, intakePct)}%` }} />
+          </div>
+        </div>
+
+        <div className="stat-row">
+          <StatChip icon={Utensils} label="Eaten" value={formatNumber(eaten)} unit="kcal" />
+          <StatChip
+            icon={ArrowDownRight}
             label="Deficit"
             value={formatNumber(day.calculated.actual_deficit_kcal)}
-            suffix="kcal"
+            unit="kcal"
+            tone="good"
+          />
+          <StatChip
+            icon={Target}
+            label="Burn"
+            value={formatNumber(day.burn_kcal)}
+            unit="kcal"
           />
         </div>
 
-        <Progress
-          label="Calories"
-          value={day.totals.calories_kcal}
-          target={day.intake_target_kcal}
-          suffix="kcal"
-        />
-        <Progress
-          label="Carbs"
-          value={day.totals.carbs_g}
-          target={day.carbs_target_g}
-          suffix="g"
-        />
-        <Progress
-          label="Protein"
-          value={day.totals.protein_g}
-          target={day.protein_target_g}
-          suffix="g"
-        />
-        <Progress
-          label="Fat"
-          value={day.totals.fat_g}
-          target={day.fat_target_g}
-          suffix="g"
-        />
-        <Progress
-          label="Water"
-          value={day.totals.water_ml}
-          target={day.water_target_ml}
-          suffix="ml"
-        />
+        <div className="macro-list">
+          <MacroRow
+            icon={Wheat}
+            label="Carbs"
+            value={day.totals.carbs_g}
+            target={day.carbs_target_g}
+            suffix="g"
+            tone="amber"
+          />
+          <MacroRow
+            icon={Drumstick}
+            label="Protein"
+            value={day.totals.protein_g}
+            target={day.protein_target_g}
+            suffix="g"
+            tone="green"
+          />
+          <MacroRow
+            icon={Nut}
+            label="Fat"
+            value={day.totals.fat_g}
+            target={day.fat_target_g}
+            suffix="g"
+            tone="plum"
+          />
+          <MacroRow
+            icon={Droplets}
+            label="Water"
+            value={day.totals.water_ml}
+            target={day.water_target_ml}
+            suffix="ml"
+            tone="blue"
+          />
+        </div>
 
         <div className="quick-row">
           <button
@@ -421,7 +497,7 @@ function TodayView(props: {
             title="Add 250 ml water"
             disabled={props.saving}
           >
-            <Droplets size={18} />
+            <Droplet size={18} />
             <span>250 ml</span>
           </button>
           <button
@@ -450,10 +526,20 @@ function TodayView(props: {
       <section className="panel side-panel">
         <div className="section-head">
           <div>
-            <p className="eyebrow">Weight</p>
-            <h2>{day.body_weight?.weight_kg ?? "--"} kg</h2>
+            <p className="eyebrow">
+              <Scale size={13} /> Body weight
+            </p>
+            <h2>
+              {day.body_weight?.weight_kg ?? "--"}
+              <small className="unit-suffix">kg</small>
+            </h2>
           </div>
         </div>
+        <p className="muted small">
+          {day.body_weight == null
+            ? "No weight logged today."
+            : `Logged ${formatTime(day.body_weight.measured_at)}`}
+        </p>
         <div className="inline-form">
           <input
             aria-label="Body weight"
@@ -463,12 +549,13 @@ function TodayView(props: {
             onChange={(event) => props.onWeightDraft(event.target.value)}
           />
           <button
-            className="icon-only"
+            className="icon-button primary"
             type="button"
             onClick={props.onSaveWeight}
             title="Save body weight"
           >
             <Save size={18} />
+            <span>Save</span>
           </button>
         </div>
       </section>
@@ -480,6 +567,13 @@ function TodayView(props: {
               <p className="eyebrow">{props.editingId == null ? "Add" : "Edit"}</p>
               <h2>Food entry</h2>
             </div>
+            <button
+              className="ghost"
+              type="button"
+              onClick={() => props.onEntryOpen(false)}
+            >
+              Cancel
+            </button>
           </div>
 
           <div className="form-grid">
@@ -561,11 +655,11 @@ function TodayView(props: {
             />
           </div>
 
-          <div className={macroWarning ? "macro-note warn" : "macro-note"}>
-            Macro estimate: {formatNumber(macroCalories)} kcal
-          </div>
-
-          <div className="form-actions">
+          <div className="form-footer">
+            <div className={macroWarning ? "macro-note warn" : "macro-note"}>
+              <Flame size={15} />
+              Macro estimate: {formatNumber(macroCalories)} kcal
+            </div>
             <button
               className="icon-button primary"
               type="button"
@@ -574,14 +668,7 @@ function TodayView(props: {
               data-testid="entry.save"
             >
               <Save size={18} />
-              <span>Save</span>
-            </button>
-            <button
-              className="ghost"
-              type="button"
-              onClick={() => props.onEntryOpen(false)}
-            >
-              Cancel
+              <span>Save entry</span>
             </button>
           </div>
         </section>
@@ -591,42 +678,59 @@ function TodayView(props: {
         <div className="section-head">
           <div>
             <p className="eyebrow">Entries</p>
-            <h2>{day.entries.length}</h2>
+            <h2>Logged today</h2>
           </div>
+          <span className="count-pill">{day.entries.length}</span>
         </div>
         <div className="entry-list">
-          {day.entries.length === 0 && <p className="muted">No entries yet.</p>}
-          {day.entries.map((entry) => (
-            <article className="entry-row" key={entry.id}>
-              <div>
-                <strong>{entry.name}</strong>
-                <span>
-                  {capitalize(entry.meal_slot)} · {formatTime(entry.logged_at)}
+          {day.entries.length === 0 && (
+            <div className="empty-state">
+              <Utensils size={22} />
+              <p>No entries yet</p>
+              <span>Use Quick add to log your first meal.</span>
+            </div>
+          )}
+          {day.entries.map((entry) => {
+            const meta = mealMeta[entry.meal_slot];
+            const Icon = meta.icon;
+            return (
+              <article className="entry-row" key={entry.id}>
+                <span className={`meal-icon tone-${meta.tone}`} aria-hidden="true">
+                  <Icon size={18} />
                 </span>
-              </div>
-              <div className="entry-numbers">
-                <span>{formatNumber(entry.calories_kcal)} kcal</span>
-                <span>{formatNumber(entry.protein_g)} P</span>
-                <span>{formatNumber(entry.water_ml)} ml</span>
-              </div>
-              <button
-                className="icon-only"
-                type="button"
-                onClick={() => props.onEdit(entry)}
-                title="Edit entry"
-              >
-                <Pencil size={17} />
-              </button>
-              <button
-                className="icon-only danger"
-                type="button"
-                onClick={() => props.onDelete(entry.id)}
-                title="Delete entry"
-              >
-                <Trash2 size={17} />
-              </button>
-            </article>
-          ))}
+                <div className="entry-main">
+                  <strong>{entry.name}</strong>
+                  <span>
+                    {capitalize(entry.meal_slot)} · {formatTime(entry.logged_at)}
+                  </span>
+                </div>
+                <div className="entry-numbers">
+                  <span className="kcal">{formatNumber(entry.calories_kcal)} kcal</span>
+                  <span>{formatNumber(entry.protein_g)} P</span>
+                  <span>{formatNumber(entry.carbs_g)} C</span>
+                  <span>{formatNumber(entry.water_ml)} ml</span>
+                </div>
+                <div className="entry-actions">
+                  <button
+                    className="icon-only"
+                    type="button"
+                    onClick={() => props.onEdit(entry)}
+                    title="Edit entry"
+                  >
+                    <Pencil size={17} />
+                  </button>
+                  <button
+                    className="icon-only danger"
+                    type="button"
+                    onClick={() => props.onDelete(entry.id)}
+                    title="Delete entry"
+                  >
+                    <Trash2 size={17} />
+                  </button>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
     </div>
@@ -640,36 +744,42 @@ function HistoryView({ summary }: { summary: Summary }) {
         <div className="section-head">
           <div>
             <p className="eyebrow">
-              {summary.start} to {summary.end}
+              {summary.start} – {summary.end}
             </p>
-            <h2>Weekly summary</h2>
+            <h2>Two-week summary</h2>
+          </div>
+          <div className="count-strip" data-testid="history.summary">
+            <span className="tag training">{summary.counts.training} training</span>
+            <span className="tag rest">{summary.counts.rest} rest</span>
+            <span className="tag">{summary.counts.days} logged</span>
           </div>
         </div>
-        <div className="metric-grid">
-          <Metric
-            label="Average kcal"
+        <div className="stat-row four">
+          <StatChip
+            icon={Flame}
+            label="Avg kcal"
             value={formatNumber(summary.averages.calories_kcal)}
           />
-          <Metric
-            label="Average protein"
+          <StatChip
+            icon={Drumstick}
+            label="Avg protein"
             value={formatNumber(summary.averages.protein_g)}
-            suffix="g"
+            unit="g"
           />
-          <Metric
-            label="Average water"
+          <StatChip
+            icon={Droplets}
+            label="Avg water"
             value={formatNumber(summary.averages.water_ml)}
-            suffix="ml"
+            unit="ml"
+            tone="blue"
           />
-          <Metric
-            label="Weekly deficit"
+          <StatChip
+            icon={ArrowDownRight}
+            label="Deficit"
             value={formatNumber(summary.estimated_deficit_kcal)}
-            suffix="kcal"
+            unit="kcal"
+            tone="good"
           />
-        </div>
-        <div className="count-strip" data-testid="history.summary">
-          <span>{summary.counts.training} training</span>
-          <span>{summary.counts.rest} rest</span>
-          <span>{summary.counts.days} logged</span>
         </div>
       </section>
       <section className="panel">
@@ -678,6 +788,10 @@ function HistoryView({ summary }: { summary: Summary }) {
             <p className="eyebrow">Trend</p>
             <h2>Kcal and weight</h2>
           </div>
+          <div className="legend">
+            <span className="legend-item kcal">Kcal</span>
+            <span className="legend-item weight">Weight</span>
+          </div>
         </div>
         <TrendChart days={summary.days} />
       </section>
@@ -685,20 +799,35 @@ function HistoryView({ summary }: { summary: Summary }) {
         <div className="section-head">
           <div>
             <p className="eyebrow">Days</p>
-            <h2>Last logs</h2>
+            <h2>Recent logs</h2>
           </div>
         </div>
         <div className="day-table">
+          <div className="day-row head">
+            <span>Date</span>
+            <span>Type</span>
+            <span>Kcal</span>
+            <span>Protein</span>
+            <span>Water</span>
+          </div>
           {summary.days.map((day) => (
             <div className="day-row" key={day.id}>
-              <span>{day.local_date}</span>
-              <span>{capitalize(day.day_type)}</span>
+              <span className="strong">{formatShortDate(day.local_date)}</span>
+              <span>
+                <span className={`tag ${day.day_type}`}>{capitalize(day.day_type)}</span>
+              </span>
               <span>{formatNumber(day.totals.calories_kcal)} kcal</span>
-              <span>{formatNumber(day.totals.protein_g)} g P</span>
+              <span>{formatNumber(day.totals.protein_g)} g</span>
               <span>{formatNumber(day.totals.water_ml)} ml</span>
             </div>
           ))}
-          {summary.days.length === 0 && <p className="muted">No logged days yet.</p>}
+          {summary.days.length === 0 && (
+            <div className="empty-state">
+              <CalendarDays size={22} />
+              <p>No logged days yet</p>
+              <span>Your daily logs will appear here.</span>
+            </div>
+          )}
         </div>
       </section>
     </div>
@@ -707,9 +836,9 @@ function HistoryView({ summary }: { summary: Summary }) {
 
 function SettingsView(props: {
   profile: Profile;
-  targets: Target[];
+  targets: TargetType[];
   onProfile: (profile: Profile) => void;
-  onTargets: (targets: Target[]) => void;
+  onTargets: (targets: TargetType[]) => void;
   onError: (message: string | null) => void;
 }) {
   const [profileDraft, setProfileDraft] = useState(props.profile);
@@ -735,7 +864,7 @@ function SettingsView(props: {
     }
   }
 
-  async function saveTarget(dayType: DayType, target: Target) {
+  async function saveTarget(dayType: DayType, target: TargetType) {
     try {
       const updated = await api.updateTarget(dayType, {
         burn_kcal: Number(target.burn_kcal),
@@ -755,7 +884,7 @@ function SettingsView(props: {
     }
   }
 
-  function updateTarget(dayType: DayType, field: keyof Target, value: number) {
+  function updateTarget(dayType: DayType, field: keyof TargetType, value: number) {
     props.onTargets(
       props.targets.map((target) =>
         target.day_type === dayType ? { ...target, [field]: value } : target
@@ -781,71 +910,79 @@ function SettingsView(props: {
             <span>Save</span>
           </button>
         </div>
-        <div className="form-grid">
-          <TextSetting
-            label="Name"
-            value={profileDraft.display_name}
-            onChange={(display_name) =>
-              setProfileDraft({ ...profileDraft, display_name })
-            }
-          />
-          <TextSetting
-            label="Email"
-            value={profileDraft.email}
-            onChange={(email) => setProfileDraft({ ...profileDraft, email })}
-          />
-          <label>
-            Sex
-            <select
-              value={profileDraft.sex}
-              onChange={(event) =>
-                setProfileDraft({
-                  ...profileDraft,
-                  sex: event.target.value as "male" | "female"
-                })
+        <div className="field-group">
+          <p className="group-label">Identity</p>
+          <div className="form-grid">
+            <TextSetting
+              label="Name"
+              value={profileDraft.display_name}
+              onChange={(display_name) =>
+                setProfileDraft({ ...profileDraft, display_name })
               }
-            >
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-            </select>
-          </label>
-          <NumericSetting
-            label="Age"
-            value={profileDraft.age}
-            onChange={(age) => setProfileDraft({ ...profileDraft, age })}
-          />
-          <NumericSetting
-            label="Height cm"
-            value={profileDraft.height_cm}
-            onChange={(height_cm) => setProfileDraft({ ...profileDraft, height_cm })}
-          />
-          <NumericSetting
-            label="Weight kg"
-            value={profileDraft.current_weight_kg}
-            onChange={(current_weight_kg) =>
-              setProfileDraft({ ...profileDraft, current_weight_kg })
-            }
-          />
-          <NumericSetting
-            label="Activity"
-            value={profileDraft.activity_factor}
-            step="0.05"
-            onChange={(activity_factor) =>
-              setProfileDraft({ ...profileDraft, activity_factor })
-            }
-          />
-          <NumericSetting
-            label="Exercise kcal"
-            value={profileDraft.training_exercise_kcal}
-            onChange={(training_exercise_kcal) =>
-              setProfileDraft({ ...profileDraft, training_exercise_kcal })
-            }
-          />
-          <TextSetting
-            label="Timezone"
-            value={profileDraft.timezone}
-            onChange={(timezone) => setProfileDraft({ ...profileDraft, timezone })}
-          />
+            />
+            <TextSetting
+              label="Email"
+              value={profileDraft.email}
+              onChange={(email) => setProfileDraft({ ...profileDraft, email })}
+            />
+            <label>
+              Sex
+              <select
+                value={profileDraft.sex}
+                onChange={(event) =>
+                  setProfileDraft({
+                    ...profileDraft,
+                    sex: event.target.value as "male" | "female"
+                  })
+                }
+              >
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+              </select>
+            </label>
+            <TextSetting
+              label="Timezone"
+              value={profileDraft.timezone}
+              onChange={(timezone) => setProfileDraft({ ...profileDraft, timezone })}
+            />
+          </div>
+        </div>
+        <div className="field-group">
+          <p className="group-label">Body &amp; activity</p>
+          <div className="form-grid">
+            <NumericSetting
+              label="Age"
+              value={profileDraft.age}
+              onChange={(age) => setProfileDraft({ ...profileDraft, age })}
+            />
+            <NumericSetting
+              label="Height cm"
+              value={profileDraft.height_cm}
+              onChange={(height_cm) => setProfileDraft({ ...profileDraft, height_cm })}
+            />
+            <NumericSetting
+              label="Weight kg"
+              value={profileDraft.current_weight_kg}
+              onChange={(current_weight_kg) =>
+                setProfileDraft({ ...profileDraft, current_weight_kg })
+              }
+            />
+            <NumericSetting
+              label="Activity"
+              value={profileDraft.activity_factor}
+              step="0.05"
+              onChange={(activity_factor) =>
+                setProfileDraft({ ...profileDraft, activity_factor })
+              }
+            />
+            <NumericSetting
+              label="Exercise kcal"
+              value={profileDraft.training_exercise_kcal}
+              onChange={(training_exercise_kcal) =>
+                setProfileDraft({ ...profileDraft, training_exercise_kcal })
+              }
+            />
+          </div>
         </div>
       </section>
 
@@ -863,54 +1000,65 @@ function SettingsView(props: {
         <div className="target-grid">
           {props.targets.map((target) => (
             <div className="target-row" key={target.day_type}>
-              <h3>{capitalize(target.day_type)}</h3>
-              <NumericSetting
-                label="Burn"
-                value={target.burn_kcal}
-                onChange={(value) => updateTarget(target.day_type, "burn_kcal", value)}
-              />
-              <NumericSetting
-                label="Intake"
-                value={target.intake_kcal}
-                onChange={(value) =>
-                  updateTarget(target.day_type, "intake_kcal", value)
-                }
-              />
-              <NumericSetting
-                label="Deficit"
-                value={target.deficit_kcal}
-                onChange={(value) =>
-                  updateTarget(target.day_type, "deficit_kcal", value)
-                }
-              />
-              <NumericSetting
-                label="Carbs"
-                value={target.carbs_g}
-                onChange={(value) => updateTarget(target.day_type, "carbs_g", value)}
-              />
-              <NumericSetting
-                label="Protein"
-                value={target.protein_g}
-                onChange={(value) => updateTarget(target.day_type, "protein_g", value)}
-              />
-              <NumericSetting
-                label="Fat"
-                value={target.fat_g}
-                onChange={(value) => updateTarget(target.day_type, "fat_g", value)}
-              />
-              <NumericSetting
-                label="Water"
-                value={target.water_ml}
-                onChange={(value) => updateTarget(target.day_type, "water_ml", value)}
-              />
-              <button
-                className="icon-button primary"
-                type="button"
-                onClick={() => saveTarget(target.day_type, target)}
-              >
-                <Save size={18} />
-                <span>Save</span>
-              </button>
+              <div className="target-head">
+                <span className={`tag ${target.day_type}`}>
+                  {target.day_type === "training" ? (
+                    <Dumbbell size={14} />
+                  ) : (
+                    <Moon size={14} />
+                  )}
+                  {capitalize(target.day_type)}
+                </span>
+                <button
+                  className="icon-button primary"
+                  type="button"
+                  onClick={() => saveTarget(target.day_type, target)}
+                >
+                  <Save size={18} />
+                  <span>Save</span>
+                </button>
+              </div>
+              <div className="target-fields">
+                <NumericSetting
+                  label="Burn"
+                  value={target.burn_kcal}
+                  onChange={(value) => updateTarget(target.day_type, "burn_kcal", value)}
+                />
+                <NumericSetting
+                  label="Intake"
+                  value={target.intake_kcal}
+                  onChange={(value) =>
+                    updateTarget(target.day_type, "intake_kcal", value)
+                  }
+                />
+                <NumericSetting
+                  label="Deficit"
+                  value={target.deficit_kcal}
+                  onChange={(value) =>
+                    updateTarget(target.day_type, "deficit_kcal", value)
+                  }
+                />
+                <NumericSetting
+                  label="Carbs"
+                  value={target.carbs_g}
+                  onChange={(value) => updateTarget(target.day_type, "carbs_g", value)}
+                />
+                <NumericSetting
+                  label="Protein"
+                  value={target.protein_g}
+                  onChange={(value) => updateTarget(target.day_type, "protein_g", value)}
+                />
+                <NumericSetting
+                  label="Fat"
+                  value={target.fat_g}
+                  onChange={(value) => updateTarget(target.day_type, "fat_g", value)}
+                />
+                <NumericSetting
+                  label="Water"
+                  value={target.water_ml}
+                  onChange={(value) => updateTarget(target.day_type, "water_ml", value)}
+                />
+              </div>
             </div>
           ))}
         </div>
@@ -919,51 +1067,67 @@ function SettingsView(props: {
   );
 }
 
-function Metric({
+function StatChip({
+  icon: Icon,
   label,
   value,
-  suffix,
+  unit,
   tone
 }: {
+  icon: ComponentType<{ size?: number }>;
   label: string;
   value: string;
-  suffix?: string;
-  tone?: "good" | "danger";
+  unit?: string;
+  tone?: "good" | "danger" | "blue";
 }) {
   return (
-    <div className={`metric ${tone ?? ""}`}>
-      <span>{label}</span>
+    <div className={`stat-chip ${tone ?? ""}`}>
+      <span className="stat-icon" aria-hidden="true">
+        <Icon size={16} />
+      </span>
+      <span className="stat-label">{label}</span>
       <strong>
         {value}
-        {suffix != null && <small>{suffix}</small>}
+        {unit != null && <small>{unit}</small>}
       </strong>
     </div>
   );
 }
 
-function Progress({
+function MacroRow({
+  icon: Icon,
   label,
   value,
   target,
-  suffix
+  suffix,
+  tone
 }: {
+  icon: ComponentType<{ size?: number }>;
   label: string;
   value: number;
   target: number;
   suffix: string;
+  tone: string;
 }) {
-  const percent = Math.min(100, Math.round((value / Math.max(target, 1)) * 100));
+  const percent = Math.round((value / Math.max(target, 1)) * 100);
+  const over = percent > 100;
   return (
-    <div className="progress-row">
-      <div>
-        <span>{label}</span>
-        <strong>
-          {formatNumber(value)} / {formatNumber(target)} {suffix}
-        </strong>
+    <div className="macro-row">
+      <span className={`macro-icon tone-${tone}`} aria-hidden="true">
+        <Icon size={16} />
+      </span>
+      <div className="macro-body">
+        <div className="macro-line">
+          <span className="macro-label">{label}</span>
+          <strong>
+            {formatNumber(value)} / {formatNumber(target)} {suffix}
+          </strong>
+        </div>
+        <div className={`bar tone-${tone} ${over ? "over" : ""}`} aria-label={`${label} progress`}>
+          <span style={{ width: `${Math.min(100, percent)}%` }} />
+        </div>
       </div>
-      <div className="bar" aria-label={`${label} progress`}>
-        <span style={{ width: `${percent}%` }} />
-      </div>
+      <span className={`pct ${over ? "over" : ""}`}>{percent}%</span>
     </div>
   );
 }
@@ -1039,26 +1203,43 @@ function TrendChart({ days }: { days: DayLog[] }) {
   const sorted = [...days].reverse();
   const values = sorted.map((day) => day.totals.calories_kcal);
   const max = Math.max(...values, 1);
-  const points = values
-    .map((value, index) => {
-      const x = sorted.length <= 1 ? 280 : (index / (sorted.length - 1)) * 280;
-      const y = 120 - (value / max) * 100;
-      return `${x},${y}`;
-    })
-    .join(" ");
+  const coords = values.map((value, index) => {
+    const x = sorted.length <= 1 ? 280 : 10 + (index / (sorted.length - 1)) * 280;
+    const y = 118 - (value / max) * 96;
+    return { x, y };
+  });
+  const points = coords.map((c) => `${c.x},${c.y}`).join(" ");
+  const first = coords[0];
+  const last = coords[coords.length - 1];
+  const area =
+    first != null && last != null ? `${first.x},122 ${points} ${last.x},122` : "";
+  const weightValues = sorted
+    .map((day) => day.body_weight?.weight_kg)
+    .filter((value): value is number => value != null);
+  const wMin = Math.min(...weightValues, Infinity);
+  const wMax = Math.max(...weightValues, -Infinity);
+  const wRange = wMax - wMin || 1;
   const weightPoints = sorted
-    .filter((day) => day.body_weight != null)
-    .map((day, index) => {
-      const x = sorted.length <= 1 ? 280 : (index / (sorted.length - 1)) * 280;
-      const y = 140 - ((day.body_weight?.weight_kg ?? 0) / 100) * 100;
+    .map((day, index) => ({ day, index }))
+    .filter(({ day }) => day.body_weight != null)
+    .map(({ day, index }) => {
+      const x = sorted.length <= 1 ? 280 : 10 + (index / (sorted.length - 1)) * 280;
+      const y = 116 - (((day.body_weight?.weight_kg ?? 0) - wMin) / wRange) * 70;
       return `${x},${y}`;
     })
     .join(" ");
 
   return (
-    <svg className="trend-chart" viewBox="0 0 300 150" role="img">
+    <svg className="trend-chart" viewBox="0 0 300 132" role="img" preserveAspectRatio="none">
       <title>Kcal and weight trend</title>
-      <line x1="0" x2="300" y1="130" y2="130" />
+      <defs>
+        <linearGradient id="kcalFill" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stopColor="#2f7d57" stopOpacity="0.28" />
+          <stop offset="100%" stopColor="#2f7d57" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <line className="axis" x1="0" x2="300" y1="122" y2="122" />
+      {area.length > 0 && <polygon className="area" points={area} fill="url(#kcalFill)" />}
       {points.length > 0 && <polyline points={points} />}
       {weightPoints.length > 0 && <polyline className="weight" points={weightPoints} />}
     </svg>
@@ -1098,6 +1279,22 @@ function formatTime(iso: string): string {
     hour: "numeric",
     minute: "2-digit"
   }).format(new Date(iso));
+}
+
+function formatLongDate(dateText: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: "long",
+    month: "long",
+    day: "numeric"
+  }).format(new Date(`${dateText}T00:00:00`));
+}
+
+function formatShortDate(dateText: string): string {
+  return new Intl.DateTimeFormat(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric"
+  }).format(new Date(`${dateText}T00:00:00`));
 }
 
 function formatNumber(value: number): string {

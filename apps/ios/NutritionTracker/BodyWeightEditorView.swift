@@ -16,14 +16,22 @@ struct BodyWeightEditorView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Body weight") {
-                    TextField("Weight", value: $weightKg, format: .number)
-                        .keyboardType(.decimalPad)
+                Section {
+                    HStack {
+                        TextField("Weight", value: $weightKg, format: .number)
+                            .keyboardType(.decimalPad)
+                            .font(.title3.weight(.semibold))
+                        Text("kg")
+                            .foregroundStyle(.secondary)
+                    }
                     TextField("Notes", text: $notes, axis: .vertical)
+                } header: {
+                    SectionLabel(title: "Body weight", systemImage: "scalemass.fill")
                 }
             }
             .navigationTitle("Log weight")
             .navigationBarTitleDisplayMode(.inline)
+            .tint(.brand)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }

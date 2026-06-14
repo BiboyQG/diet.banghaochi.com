@@ -11,7 +11,36 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Section("Profile") {
+            Section {
+                HStack(spacing: 14) {
+                    Image(systemName: "flame.fill")
+                        .font(.title3)
+                        .foregroundStyle(.white)
+                        .frame(width: 44, height: 44)
+                        .background(
+                            LinearGradient(colors: [.brandLeaf, .brandDeep], startPoint: .topLeading, endPoint: .bottomTrailing),
+                            in: RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        )
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("ESTIMATED BMR")
+                            .font(.caption2.weight(.bold))
+                            .tracking(0.4)
+                            .foregroundStyle(.secondary)
+                        HStack(alignment: .firstTextBaseline, spacing: 4) {
+                            Text(profileDraft.bmr, format: .number.precision(.fractionLength(0)))
+                                .font(.title.weight(.bold))
+                                .monospacedDigit()
+                            Text("kcal")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    Spacer()
+                }
+                .listRowBackground(Color.clear)
+            }
+
+            Section {
                 TextField("Name", text: $profileDraft.displayName)
                 TextField("Email", text: $profileDraft.email)
                     .textInputAutocapitalization(.never)
@@ -30,16 +59,23 @@ struct SettingsView: View {
                 TextField("Timezone", text: $profileDraft.timezone)
                     .textInputAutocapitalization(.never)
 
-                LabeledContent("BMR", value: "\(profileDraft.bmr.formatted(.number.precision(.fractionLength(0)))) kcal")
-
-                Button("Save profile") {
+                Button {
                     Task { await store.updateProfile(profileDraft.patchRequest) }
+                } label: {
+                    Label("Save profile", systemImage: "checkmark.circle.fill")
+                        .font(.body.weight(.semibold))
+                        .frame(maxWidth: .infinity)
                 }
+                .buttonStyle(.borderedProminent)
+                .tint(.brand)
                 .disabled(!profileDraft.isValid)
+                .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 8, trailing: 16))
+            } header: {
+                SectionLabel(title: "Profile", systemImage: "person.crop.circle")
             }
             .accessibilityIdentifier("settings.profile")
 
-            Section("Targets") {
+            Section {
                 TargetEditor(draft: $trainingDraft) {
                     Task { await store.updateTarget(dayType: .training, patch: trainingDraft.patchRequest) }
                 }
@@ -47,9 +83,11 @@ struct SettingsView: View {
                 TargetEditor(draft: $restDraft) {
                     Task { await store.updateTarget(dayType: .rest, patch: restDraft.patchRequest) }
                 }
+            } header: {
+                SectionLabel(title: "Targets", systemImage: "scope")
             }
 
-            Section("Session") {
+            Section {
                 LabeledContent("Auth", value: auth.statusText)
                 LabeledContent("API", value: auth.configuration.apiBaseURL.host() ?? "Unknown")
 
@@ -71,7 +109,11 @@ struct SettingsView: View {
                         .foregroundStyle(.red)
                 }
 
-                Link("Export JSON", destination: auth.configuration.exportURL)
+                Link(destination: auth.configuration.exportURL) {
+                    Label("Export JSON", systemImage: "square.and.arrow.up")
+                }
+            } header: {
+                SectionLabel(title: "Session", systemImage: "person.badge.shield.checkmark")
             }
         }
         .navigationTitle("Settings")
@@ -131,8 +173,12 @@ private struct TargetEditor: View {
     @Binding var draft: TargetDraft
     let onSave: () -> Void
 
+    private var tint: Color {
+        draft.dayType == .training ? .brand : .macroPlum
+    }
+
     var body: some View {
-        DisclosureGroup(draft.dayType.title) {
+        DisclosureGroup {
             numberField("Burn", value: $draft.burnKcal, unit: "kcal")
             numberField("Intake", value: $draft.intakeKcal, unit: "kcal")
             numberField("Deficit", value: $draft.deficitKcal, unit: "kcal")
@@ -142,6 +188,10 @@ private struct TargetEditor: View {
             numberField("Water", value: $draft.waterMl, unit: "ml")
             Button("Save \(draft.dayType.title.lowercased()) target", action: onSave)
                 .disabled(!draft.isValid)
+        } label: {
+            Label(draft.dayType.title, systemImage: draft.dayType.systemImage)
+                .font(.body.weight(.medium))
+                .foregroundStyle(tint)
         }
     }
 
