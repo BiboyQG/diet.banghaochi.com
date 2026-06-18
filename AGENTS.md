@@ -26,6 +26,13 @@
 - Do not embed service tokens in the iOS app or web bundle.
 - Passkeys are not a drop-in replacement for Cloudflare Access OTP here. A passkey path would mean either configuring an external passkey-capable IdP for Access or replacing Access with app-owned WebAuthn/passkey auth plus session middleware.
 
+## iOS AI Food Entry
+
+- The iOS "Describe food" flow lives in `FoodDescriptionParser.swift` and `FoodDescriptionEntryView.swift`.
+- Foundation Models code must stay behind `#if canImport(FoundationModels)` and `#available(iOS 27.0, *)`; the app deployment target remains lower.
+- AI estimates create an editable `EntryDraft` only. Do not auto-save or hide the serving assumptions, confidence, or warnings before the user taps Save.
+- Keep `FoodDescriptionParserTests` updated when changing parser availability, estimate mapping, or draft notes.
+
 ## Local Commands
 
 ```bash

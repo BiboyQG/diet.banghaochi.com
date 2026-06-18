@@ -19,10 +19,16 @@ final class AppStore {
 
     private let client: NutritionAPIClient
     private let calendar: Calendar
+    private let foodDescriptionParser: FoodDescriptionParser
 
-    init(client: NutritionAPIClient, calendar: Calendar = .current) {
+    init(
+        client: NutritionAPIClient,
+        calendar: Calendar = .current,
+        foodDescriptionParser: FoodDescriptionParser = .live
+    ) {
         self.client = client
         self.calendar = calendar
+        self.foodDescriptionParser = foodDescriptionParser
     }
 
     var todayLocalDate: String {
@@ -202,6 +208,14 @@ final class AppStore {
             waterMl: milliliters
         )
         await saveEntry(draft)
+    }
+
+    func foodDescriptionAvailability() async -> FoodDescriptionParserAvailability {
+        await foodDescriptionParser.availability()
+    }
+
+    func estimateFoodDescription(_ description: String) async throws -> FoodDescriptionEstimate {
+        try await foodDescriptionParser.estimate(description)
     }
 
     private func refreshSummary() async {

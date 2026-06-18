@@ -6,6 +6,7 @@ Private nutrition tracker for `diet.banghaochi.com`.
 
 - Daily nutrition, water, weight, and target tracking.
 - Reusable food templates for common meals across web and iOS.
+- iOS natural-language food estimates using Apple Foundation Models on supported iOS 27+ devices.
 - Cloudflare Access-protected web app and API, with iOS login through `/auth/ios-callback`.
 
 ## Local Setup
@@ -45,6 +46,8 @@ xcodebuild test -project NutritionTracker.xcodeproj -scheme NutritionTracker -de
 ```
 
 The checked-in iOS app targets `https://diet.banghaochi.com/api/v1/` and requires Cloudflare Access login through `/auth/ios-callback`. For local-only simulator work, set `API_BASE_URL` in `apps/ios/project.yml` back to `http://localhost:8787/api/v1/` and regenerate the Xcode project.
+
+The iOS "Describe food" flow uses Apple's Foundation Models framework when Apple Intelligence is available on iOS 27 or later. Model output becomes an editable entry draft with visible serving assumptions, confidence, and warnings; it is not saved until the user reviews it and taps Save.
 
 ## Production Notes
 

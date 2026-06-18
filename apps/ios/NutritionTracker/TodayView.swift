@@ -36,6 +36,8 @@ struct TodayView: View {
                 EntryEditorView(entry: entry)
             case .template(let template):
                 FoodTemplateEditorView(template: template)
+            case .foodDescription:
+                FoodDescriptionEntryView()
             case .bodyWeight(let initialWeightKg):
                 BodyWeightEditorView(initialWeightKg: initialWeightKg)
             }
@@ -247,38 +249,58 @@ struct TodayView: View {
     }
 
     private var quickActions: some View {
-        HStack(spacing: 10) {
-            Button {
-                Task { await store.addWater(250) }
-            } label: {
-                Label("250 ml", systemImage: "drop")
-                    .font(.subheadline.weight(.semibold))
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .tint(.macroBlue)
+        let columns = [
+            GridItem(.flexible(), spacing: 10),
+            GridItem(.flexible(), spacing: 10)
+        ]
 
-            Button {
-                Task { await store.addWater(500) }
-            } label: {
-                Label("500 ml", systemImage: "drop.fill")
-                    .font(.subheadline.weight(.semibold))
-                    .frame(maxWidth: .infinity)
-            }
-            .buttonStyle(.bordered)
-            .tint(.macroBlue)
+        return VStack(alignment: .leading, spacing: 12) {
+            SectionLabel(title: "Quick log", systemImage: "bolt.fill")
 
-            Button {
-                sheet = .entry(nil)
-            } label: {
-                Label("Quick add", systemImage: "plus")
-                    .font(.subheadline.weight(.semibold))
-                    .frame(maxWidth: .infinity)
+            LazyVGrid(columns: columns, spacing: 10) {
+                Button {
+                    Task { await store.addWater(250) }
+                } label: {
+                    Label("250 ml", systemImage: "drop")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(.macroBlue)
+
+                Button {
+                    Task { await store.addWater(500) }
+                } label: {
+                    Label("500 ml", systemImage: "drop.fill")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .tint(.macroBlue)
+
+                Button {
+                    sheet = .foodDescription
+                } label: {
+                    Label("Describe", systemImage: "sparkles")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.brandLeaf)
+                .accessibilityIdentifier("today.describeFood")
+
+                Button {
+                    sheet = .entry(nil)
+                } label: {
+                    Label("Quick add", systemImage: "plus")
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.brand)
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.brand)
+            .controlSize(.large)
         }
-        .controlSize(.large)
     }
 
     private var commonFoods: some View {
@@ -544,6 +566,7 @@ struct TodayView: View {
 private enum TodaySheet: Identifiable {
     case entry(Entry?)
     case template(FoodTemplate?)
+    case foodDescription
     case bodyWeight(Double)
 
     var id: String {
@@ -552,6 +575,8 @@ private enum TodaySheet: Identifiable {
             entry?.id ?? "new-entry"
         case .template(let template):
             template?.id ?? "new-template"
+        case .foodDescription:
+            "food-description"
         case .bodyWeight:
             "body-weight"
         }

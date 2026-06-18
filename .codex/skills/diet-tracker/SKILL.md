@@ -23,6 +23,7 @@ Use this skill when changing the private nutrition tracker in this repository.
 - If the iOS `API_BASE_URL`, Access callback URL, or Worker `/auth/ios-callback` behavior changes, update `docs/runbooks/cloudflare-access.md`.
 - If D1 schema or seed data changes, update `apps/worker/migrations`, `docs/runbooks/d1.md`, and any cross-platform clients that depend on the schema.
 - If app icons are replaced, update both the source master and derived platform sizes.
+- If the iOS Foundation Models food-entry flow changes, keep it iOS 27+ availability-gated, review-before-save, and covered by parser/draft tests.
 
 ## Common Checks
 
