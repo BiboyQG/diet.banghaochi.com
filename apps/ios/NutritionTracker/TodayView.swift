@@ -142,6 +142,7 @@ struct TodayView: View {
                 .accessibilityIdentifier("today.dayType.\(dayType.rawValue)")
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: day.dayType)
         .padding(4)
         .background(
             Color(.secondarySystemGroupedBackground),
@@ -172,6 +173,8 @@ struct TodayView: View {
                             .font(.system(size: 40, weight: .bold, design: .rounded))
                             .foregroundStyle(isOver ? Color.red : Color.brandDeep)
                             .monospacedDigit()
+                            .contentTransition(.numericText())
+                            .animation(.easeOut(duration: 0.3), value: remaining)
                         Text("kcal")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.secondary)
@@ -202,6 +205,7 @@ struct TodayView: View {
                             )
                         )
                         .frame(width: max(8, geo.size.width * fraction))
+                        .animation(.easeOut(duration: 0.35), value: fraction)
                 }
             }
             .frame(height: 11)
@@ -317,11 +321,13 @@ struct TodayView: View {
                 VStack(spacing: 0) {
                     ForEach(Array(store.foodTemplates.enumerated()), id: \.element.id) { index, template in
                         foodTemplateRow(template)
+                            .transition(.opacity)
                         if index < store.foodTemplates.count - 1 {
                             Divider().padding(.vertical, 2)
                         }
                     }
                 }
+                .animation(.easeInOut(duration: 0.25), value: store.foodTemplates.map(\.id))
             }
         }
         .card()
@@ -467,11 +473,13 @@ struct TodayView: View {
                 VStack(spacing: 0) {
                     ForEach(Array(entries.enumerated()), id: \.element.id) { index, entry in
                         entryRow(entry)
+                            .transition(.opacity)
                         if index < entries.count - 1 {
                             Divider().padding(.leading, 48)
                         }
                     }
                 }
+                .animation(.easeInOut(duration: 0.25), value: entries.map(\.id))
             }
         }
         .card()

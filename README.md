@@ -32,6 +32,8 @@ npm run test:web
 npm run test:e2e
 ```
 
+Web tests cover the common-food quick-log feedback state and the reduced-motion stylesheet guard. SwiftUI visual polish is verified through iOS simulator tests unless it changes data flow or API behavior.
+
 ## iOS
 
 The native app lives in `apps/ios` and uses XcodeGen for the project file.

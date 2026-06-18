@@ -50,6 +50,8 @@ npm run test:web
 npm run test:e2e
 ```
 
+For interface animation changes, keep motion subtle, preserve reduced-motion behavior, and add focused tests for any stateful web feedback. For SwiftUI-only animation modifiers, simulator tests are the main guard unless data flow changes.
+
 For iOS, prefer XcodeBuildMCP when available. The CLI equivalent is:
 
 ```bash

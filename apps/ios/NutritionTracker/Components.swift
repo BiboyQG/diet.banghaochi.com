@@ -123,10 +123,12 @@ struct MetricCard: View {
                     .font(.title2.weight(.bold))
                     .foregroundStyle(.primary)
                     .monospacedDigit()
+                    .contentTransition(.numericText())
                 Text(unit)
                     .font(.caption2.weight(.semibold))
                     .foregroundStyle(.secondary)
             }
+            .animation(.easeOut(duration: 0.3), value: value)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(13)
@@ -178,6 +180,7 @@ struct ProgressMetric: View {
                     Text("\(value.formatted(.number.precision(.fractionLength(0)))) / \(target.formatted(.number.precision(.fractionLength(0)))) \(unit)")
                         .font(.subheadline.weight(.semibold))
                         .monospacedDigit()
+                        .contentTransition(.numericText())
                 }
 
                 GeometryReader { geo in
@@ -197,7 +200,9 @@ struct ProgressMetric: View {
                 .monospacedDigit()
                 .foregroundStyle(isOver ? .red : .secondary)
                 .frame(width: 42, alignment: .trailing)
+                .contentTransition(.numericText())
         }
+        .animation(.easeOut(duration: 0.35), value: value)
         .accessibilityElement(children: .combine)
     }
 }

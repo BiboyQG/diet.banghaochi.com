@@ -680,10 +680,15 @@ a.icon-button {
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
   background: var(--surface);
+  animation: row-in 0.26s ease backwards;
   transition:
     border-color 0.14s ease,
     box-shadow 0.14s ease,
     transform 0.14s ease;
+}
+
+.template-card.is-logged {
+  animation: log-pulse 0.9s ease;
 }
 
 .template-card:hover {
@@ -919,6 +924,10 @@ select:focus-visible {
   border: 1px solid var(--line-soft);
   border-radius: var(--radius);
   background: var(--surface-2);
+  animation: row-in 0.26s ease backwards;
+  transition:
+    border-color 0.14s ease,
+    background 0.14s ease;
 }
 
 .entry-row:hover {
@@ -1223,6 +1232,29 @@ select:focus-visible {
   }
 }
 
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes log-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(47, 125, 87, 0);
+  }
+  30% {
+    box-shadow: 0 0 0 3px rgba(47, 125, 87, 0.26);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(47, 125, 87, 0);
+  }
+}
+
 .muted {
   color: var(--muted);
 }
@@ -1320,5 +1352,16 @@ select:focus-visible {
   .quick-row .primary {
     margin-left: 0;
     width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }

@@ -29,7 +29,7 @@ import {
   Wheat
 } from "lucide-react";
 import type { ComponentType } from "react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   calculateBmr,
   calculateMacroCalories,
@@ -114,6 +114,8 @@ export default function App() {
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(null);
   const [templateOpen, setTemplateOpen] = useState(false);
   const [weightDraft, setWeightDraft] = useState("");
+  const [loggedTemplateId, setLoggedTemplateId] = useState<string | null>(null);
+  const loggedTemplateTimer = useRef<number | null>(null);
 
   const historyRange = useMemo(
     () => ({
@@ -151,6 +153,15 @@ export default function App() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(
+    () => () => {
+      if (loggedTemplateTimer.current != null) {
+        window.clearTimeout(loggedTemplateTimer.current);
+      }
+    },
+    []
+  );
 
   async function refreshDayAndSummary(nextDay?: DayLog) {
     if (nextDay != null) {
@@ -280,6 +291,14 @@ export default function App() {
       });
       await refreshDayAndSummary(result.day);
       setTemplates((current) => upsertTemplate(current, result.template));
+      setLoggedTemplateId(template.id);
+      if (loggedTemplateTimer.current != null) {
+        window.clearTimeout(loggedTemplateTimer.current);
+      }
+      loggedTemplateTimer.current = window.setTimeout(
+        () => setLoggedTemplateId((current) => (current === template.id ? null : current)),
+        900
+      );
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -400,6 +419,7 @@ export default function App() {
           templateDraft={templateDraft}
           templateOpen={templateOpen}
           editingTemplateId={editingTemplateId}
+          loggedTemplateId={loggedTemplateId}
           weightDraft={weightDraft}
           onDayType={changeDayType}
           onAddWater={addWater}
@@ -496,6 +516,7 @@ function TodayView(props: {
   templateDraft: FoodTemplateCreateInput;
   templateOpen: boolean;
   editingTemplateId: string | null;
+  loggedTemplateId: string | null;
   weightDraft: string;
   onDayType: (dayType: DayType) => void;
   onAddWater: (amount: number) => void;
@@ -696,7 +717,12 @@ function TodayView(props: {
               const meta = mealMeta[template.meal_slot];
               const Icon = meta.icon;
               return (
-                <article className="template-card" key={template.id}>
+                <article
+                  className={`template-card ${
+                    props.loggedTemplateId === template.id ? "is-logged" : ""
+                  }`}
+                  key={template.id}
+                >
                   <div className="template-card-top">
                     <span className={`meal-icon tone-${meta.tone}`} aria-hidden="true">
                       <Icon size={18} />

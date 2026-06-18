@@ -39,7 +39,8 @@ function day(entries: unknown[] = []) {
   };
 }
 
-function installFetchMock() {
+function installFetchMock(foodTemplates: FoodTemplateFixture[] = []) {
+  let templates = [...foodTemplates];
   const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = String(input);
     if (url.endsWith("/profile")) {
@@ -65,7 +66,41 @@ function installFetchMock() {
       ]);
     }
     if (url.endsWith("/food-templates")) {
-      return json([]);
+      return json(templates);
+    }
+    if (url.includes("/food-templates/") && url.endsWith("/log")) {
+      const templateId = url.split("/food-templates/")[1]?.split("/")[0];
+      const template = templates.find((item) => item.id === templateId);
+      if (template == null) return json({ error: "Template not found" }, 404);
+      const updatedTemplate = {
+        ...template,
+        usage_count: template.usage_count + 1,
+        last_used_at: "2026-06-15T12:00:00.000Z",
+        updated_at: "2026-06-15T12:00:00.000Z"
+      };
+      templates = templates.map((item) =>
+        item.id === updatedTemplate.id ? updatedTemplate : item
+      );
+      const entry = {
+        id: "entry_template_1",
+        day_log_id: "day_1",
+        logged_at: "2026-06-15T12:00:00.000Z",
+        meal_slot: template.meal_slot,
+        name: template.name,
+        calories_kcal: template.calories_kcal,
+        carbs_g: template.carbs_g,
+        protein_g: template.protein_g,
+        fat_g: template.fat_g,
+        water_ml: template.water_ml,
+        notes: template.notes,
+        created_at: "2026-06-15T12:00:00.000Z",
+        updated_at: "2026-06-15T12:00:00.000Z",
+        deleted_at: null
+      };
+      return json(
+        { entry, template: updatedTemplate, day: day([entry]), warnings: [] },
+        201
+      );
     }
     if (url.includes("/summary")) {
       return json({
@@ -125,6 +160,29 @@ describe("App", () => {
       );
     });
   });
+
+  it("shows and clears common-food log feedback", async () => {
+    const fetchMock = installFetchMock([foodTemplate()]);
+    render(<App />);
+
+    const logButton = await screen.findByTestId("template.log.template_1");
+    const card = logButton.closest(".template-card");
+    expect(card).not.toBeNull();
+    expect(card).not.toHaveClass("is-logged");
+
+    fireEvent.click(logButton);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/v1/food-templates/template_1/log",
+        expect.objectContaining({ method: "POST" })
+      );
+      expect(card).toHaveClass("is-logged");
+    });
+    await waitFor(() => expect(card).not.toHaveClass("is-logged"), {
+      timeout: 1500
+    });
+  });
 });
 
 function target(day_type: string, burn_kcal: number, intake_kcal: number, water_ml: number) {
@@ -148,4 +206,40 @@ function json(body: unknown, status = 200) {
     status,
     headers: { "content-type": "application/json" }
   });
+}
+
+function foodTemplate(): FoodTemplateFixture {
+  return {
+    id: "template_1",
+    meal_slot: "lunch",
+    name: "Chipotle bowl",
+    calories_kcal: 540,
+    carbs_g: 54.5,
+    protein_g: 28.5,
+    fat_g: 20.5,
+    water_ml: 0,
+    notes: null,
+    usage_count: 0,
+    last_used_at: null,
+    created_at: "2026-06-15T00:00:00.000Z",
+    updated_at: "2026-06-15T00:00:00.000Z",
+    deleted_at: null
+  };
+}
+
+interface FoodTemplateFixture {
+  id: string;
+  meal_slot: "lunch";
+  name: string;
+  calories_kcal: number;
+  carbs_g: number;
+  protein_g: number;
+  fat_g: number;
+  water_ml: number;
+  notes: string | null;
+  usage_count: number;
+  last_used_at: string | null;
+  created_at: string;
+  updated_at: string;
+  deleted_at: string | null;
 }
