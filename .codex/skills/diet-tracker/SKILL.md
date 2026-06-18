@@ -56,6 +56,17 @@ xcodegen generate --spec project.yml
 xcodebuild test -project NutritionTracker.xcodeproj -scheme NutritionTracker -destination 'platform=iOS Simulator,name=iPhone 17'
 ```
 
+## Physical iPhone Install
+
+Keep Personal Team signing and device-specific provisioning local unless the user explicitly asks to share those changes. When Xcode beta is required for the connected iPhone/iOS version, use `DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer`.
+
+```bash
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer xcrun devicectl list devices
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer xcodebuild -project apps/ios/NutritionTracker.xcodeproj -scheme NutritionTracker -configuration Debug -destination 'id=<device-id>' -derivedDataPath /tmp/NutritionTrackerDeviceBuild -allowProvisioningUpdates build
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer xcrun devicectl device install app --device <device-id> /tmp/NutritionTrackerDeviceBuild/Build/Products/Debug-iphoneos/NutritionTracker.app
+DEVELOPER_DIR=/Applications/Xcode-beta.app/Contents/Developer xcrun devicectl device process launch --device <device-id> com.banghaochi.diet
+```
+
 ## Cross-Platform Smoke
 
 Before calling production v1 done:
