@@ -50,6 +50,8 @@ The checked-in iOS app targets `https://diet.banghaochi.com/api/v1/` and require
 
 The iOS "Describe food" flow uses Apple's Foundation Models framework when Apple Intelligence is available on iOS 27 or later. Model output becomes an editable entry draft with visible serving assumptions, confidence, and warnings; it is not saved until the user reviews it and taps Save.
 
+The iOS 26+ clear/tinted Home Screen icon is delivered through `apps/ios/NutritionTracker/AppIcon.icon`. The older PNG appiconset remains checked in as the legacy fallback.
+
 ## Production Notes
 
 The web app is deployed as static assets from the Worker, so `diet.banghaochi.com`, `/api/*`, and `/auth/ios-callback` share one Cloudflare Access-protected origin.

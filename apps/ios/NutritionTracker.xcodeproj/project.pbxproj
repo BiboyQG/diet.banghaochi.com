@@ -21,6 +21,7 @@
 		8D83D2F161889CC48B9FC597 /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3F3EBD4CECDECDF44C382B47 /* Components.swift */; };
 		9CB12E538CC220E204E857F9 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBFE33C5CD6551804F2D2FDC /* SettingsView.swift */; };
 		A26AFD2A42D428364B3644A9 /* EntryEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61C75E4EFE4D8B5BE03D32C2 /* EntryEditorView.swift */; };
+		AF059A3B4741D8BFCB078184 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = FDC5B1E7CE63BADB5757D129 /* AppIcon.icon */; };
 		AF6A81AA131DBFAB22252A5B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A8C82B42B95E8EB3AB5D8D48 /* Assets.xcassets */; };
 		C4ABDE61FF21845E07995817 /* AppEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A4E2DFBA64517D672203999 /* AppEnvironment.swift */; };
 		C4DACD995969318558B2A124 /* FoodDescriptionEntryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B46CF951F6FC0D445AA7D0C6 /* FoodDescriptionEntryView.swift */; };
@@ -69,6 +70,7 @@
 		F19789DDE8C4E71BBEEE5070 /* FoodDescriptionParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodDescriptionParserTests.swift; sourceTree = "<group>"; };
 		F7A7778041A35A7C6ECBF099 /* NutritionTracker.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = NutritionTracker.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FAD365596580E50B390E3F63 /* NutritionAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NutritionAPIClient.swift; sourceTree = "<group>"; };
+		FDC5B1E7CE63BADB5757D129 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -85,6 +87,7 @@
 			isa = PBXGroup;
 			children = (
 				0A4E2DFBA64517D672203999 /* AppEnvironment.swift */,
+				FDC5B1E7CE63BADB5757D129 /* AppIcon.icon */,
 				657CAA00E13E549D5A58B4A5 /* AppStore.swift */,
 				28E8DC6EFA6A9018065240EB /* AppView.swift */,
 				A8C82B42B95E8EB3AB5D8D48 /* Assets.xcassets */,
@@ -206,6 +209,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AF059A3B4741D8BFCB078184 /* AppIcon.icon in Resources */,
 				AF6A81AA131DBFAB22252A5B /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

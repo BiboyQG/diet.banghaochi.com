@@ -83,6 +83,7 @@ npx wrangler deploy --env production
 
 ## Icons
 
-- iOS app icon source: `apps/ios/NutritionTracker/Assets.xcassets/AppIcon.appiconset/DietTrackerAppIcon-1024.png`.
+- iOS 26+ clear/tinted icon source: `apps/ios/NutritionTracker/AppIcon.icon`.
+- Legacy iOS app icon source: `apps/ios/NutritionTracker/Assets.xcassets/AppIcon.appiconset/DietTrackerAppIcon-1024.png`.
 - Web icon source: `apps/web/public/icons/diet-tracker-web-icon-master.png`.
-- Regenerate derived icon sizes after replacing either master.
+- Regenerate derived icon sizes after replacing any PNG master.

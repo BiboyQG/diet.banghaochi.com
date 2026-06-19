@@ -1,0 +1,29 @@
+{
+  "fill": {
+    "automatic-gradient": "srgb:0.97647,0.92157,0.76471,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "image-name": "DietTrackerMark.svg",
+          "name": "Diet Tracker Mark"
+        }
+      ],
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.42
+      },
+      "translucency": {
+        "enabled": true,
+        "value": 0.34
+      }
+    }
+  ],
+  "supported-platforms": {
+    "circles": [
+      "watchOS"
+    ],
+    "squares": "shared"
+  }
+}

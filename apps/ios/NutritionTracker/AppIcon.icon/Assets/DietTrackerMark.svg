@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bowl" x1="207" x2="808" y1="687" y2="465" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#102f20"/>
+      <stop offset="0.52" stop-color="#23543a"/>
+      <stop offset="1" stop-color="#143723"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="203" x2="487" y1="568" y2="516" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#dce7d1"/>
+      <stop offset="0.2" stop-color="#f7f0d7"/>
+      <stop offset="0.34" stop-color="#386e49"/>
+      <stop offset="1" stop-color="#143622"/>
+    </linearGradient>
+    <linearGradient id="arcGreen" x1="233" x2="587" y1="318" y2="210" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#15341f"/>
+      <stop offset="1" stop-color="#325f40"/>
+    </linearGradient>
+    <linearGradient id="arcGold" x1="646" x2="875" y1="231" y2="397" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffb233"/>
+      <stop offset="1" stop-color="#f0a51d"/>
+    </linearGradient>
+    <linearGradient id="drop" x1="479" x2="604" y1="337" y2="561" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#b6fff5"/>
+      <stop offset="0.48" stop-color="#4ed6c7"/>
+      <stop offset="1" stop-color="#129987"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#06150e" flood-opacity="0.36"/>
+    </filter>
+    <filter id="smallShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#06150e" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <path fill="url(#bowl)" d="M180 563c65 154 177 231 336 231 154 0 261-72 321-216 15-36-20-73-55-54-83 46-174 71-267 71-98 0-192-27-278-78-39-23-75 4-57 46Z"/>
+    <path fill="#f6edd4" d="M202 544c83 43 188 68 309 68 122 0 235-27 321-73 14-8 21-26 13-40-8-15-27-20-42-12-80 43-181 67-292 67-112 0-210-23-285-63-15-8-33-3-42 11-9 15-1 34 18 42Z" opacity=".92"/>
+    <path fill="url(#leaf)" d="M226 530c58-31 118-42 181-33 48 7 85 27 111 59-48 14-101 20-158 17-54-3-99-17-134-43Z"/>
+  </g>
+
+  <g fill="none" stroke-linecap="round" filter="url(#smallShadow)">
+    <path stroke="url(#arcGreen)" stroke-width="54" d="M241 490c28-122 105-215 232-280 38-20 78-32 120-38"/>
+    <path stroke="url(#arcGold)" stroke-width="54" d="M665 186c100 24 169 89 207 194"/>
+    <path stroke="#1a4730" stroke-width="44" d="M575 667c90-11 166-42 229-93"/>
+  </g>
+
+  <g filter="url(#smallShadow)">
+    <path fill="url(#drop)" d="M536 330c45 88 79 149 79 206 0 64-44 109-104 109-58 0-101-44-101-105 0-57 35-122 81-210 10-20 34-20 45 0Z"/>
+    <path fill="#effffa" d="M513 373c20 45 31 83 31 115 0 50-25 89-70 112 54-8 91-49 91-100 0-38-18-78-52-127Z" opacity=".5"/>
+    <circle cx="824" cy="471" r="43" fill="#f2a01c"/>
+    <circle cx="810" cy="456" r="17" fill="#ffc057" opacity=".62"/>
+  </g>
+</svg>
