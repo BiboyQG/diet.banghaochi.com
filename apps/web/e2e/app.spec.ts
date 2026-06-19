@@ -58,6 +58,8 @@ test("covers manual logging, history, settings, and responsive layout", async ({
   await page.getByRole("button", { name: "History" }).click();
   await expect(page.getByTestId("history.summary")).toContainText("rest");
   await expect(page.getByRole("heading", { name: "Kcal and weight" })).toBeVisible();
+  await page.getByTestId("history.day.day_1").click();
+  await expect(page.getByTestId("history.details.day_1")).toContainText("Water 250 ml");
 
   await page.getByRole("button", { name: "Settings" }).click();
   const profilePanel = page.locator(".panel").filter({ hasText: "Profile" });

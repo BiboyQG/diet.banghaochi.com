@@ -5,6 +5,7 @@ Private nutrition tracker for `diet.banghaochi.com`.
 ## Features
 
 - Daily nutrition, water, weight, and target tracking.
+- Expandable history days with per-day entries, macros, water, weight, and remaining calories.
 - Reusable food templates for common meals across web and iOS.
 - iOS natural-language food estimates using Apple Foundation Models on supported iOS 27+ devices.
 - Cloudflare Access-protected web app and API, with iOS login through `/auth/ios-callback`.

@@ -3,6 +3,7 @@ import {
   ArrowDownRight,
   Bookmark,
   CalendarDays,
+  ChevronDown,
   Coffee,
   Cookie,
   Download,
@@ -1121,6 +1122,15 @@ function TodayView(props: {
 }
 
 function HistoryView({ summary }: { summary: Summary }) {
+  const [expandedDayId, setExpandedDayId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (expandedDayId == null) return;
+    if (!summary.days.some((day) => day.id === expandedDayId)) {
+      setExpandedDayId(null);
+    }
+  }, [expandedDayId, summary.days]);
+
   return (
     <div className="history-layout">
       <section className="panel">
@@ -1192,18 +1202,34 @@ function HistoryView({ summary }: { summary: Summary }) {
             <span>Kcal</span>
             <span>Protein</span>
             <span>Water</span>
+            <span />
           </div>
-          {summary.days.map((day) => (
-            <div className="day-row" key={day.id}>
-              <span className="strong">{formatShortDate(day.local_date)}</span>
-              <span>
-                <span className={`tag ${day.day_type}`}>{capitalize(day.day_type)}</span>
-              </span>
-              <span>{formatNumber(day.totals.calories_kcal)} kcal</span>
-              <span>{formatNumber(day.totals.protein_g)} g</span>
-              <span>{formatNumber(day.totals.water_ml)} ml</span>
-            </div>
-          ))}
+          {summary.days.map((day) => {
+            const isExpanded = expandedDayId === day.id;
+            const detailId = `history-details-${day.id}`;
+            return (
+              <article className={`day-group ${isExpanded ? "is-expanded" : ""}`} key={day.id}>
+                <button
+                  className="day-row day-button"
+                  type="button"
+                  aria-controls={detailId}
+                  aria-expanded={isExpanded}
+                  onClick={() => setExpandedDayId(isExpanded ? null : day.id)}
+                  data-testid={`history.day.${day.id}`}
+                >
+                  <span className="strong">{formatShortDate(day.local_date)}</span>
+                  <span>
+                    <span className={`tag ${day.day_type}`}>{capitalize(day.day_type)}</span>
+                  </span>
+                  <span>{formatNumber(day.totals.calories_kcal)} kcal</span>
+                  <span>{formatNumber(day.totals.protein_g)} g</span>
+                  <span>{formatNumber(day.totals.water_ml)} ml</span>
+                  <ChevronDown className="day-chevron" size={17} aria-hidden="true" />
+                </button>
+                {isExpanded && <HistoryDayDetails day={day} id={detailId} />}
+              </article>
+            );
+          })}
           {summary.days.length === 0 && (
             <div className="empty-state">
               <CalendarDays size={22} />
@@ -1213,6 +1239,77 @@ function HistoryView({ summary }: { summary: Summary }) {
           )}
         </div>
       </section>
+    </div>
+  );
+}
+
+function HistoryDayDetails({ day, id }: { day: DayLog; id: string }) {
+  return (
+    <div className="history-day-details" id={id} data-testid={`history.details.${day.id}`}>
+      <div className="history-detail-grid">
+        <DetailMetric label="Carbs" value={`${formatNumber(day.totals.carbs_g)} g`} />
+        <DetailMetric label="Protein" value={`${formatNumber(day.totals.protein_g)} g`} />
+        <DetailMetric label="Fat" value={`${formatNumber(day.totals.fat_g)} g`} />
+        <DetailMetric label="Water target" value={`${formatNumber(day.water_target_ml)} ml`} />
+        <DetailMetric
+          label="Remaining"
+          value={`${formatNumber(day.calculated.remaining_intake_kcal)} kcal`}
+        />
+        <DetailMetric
+          label="Weight"
+          value={
+            day.body_weight == null
+              ? "Not logged"
+              : `${formatNumber(day.body_weight.weight_kg)} kg`
+          }
+        />
+      </div>
+
+      <div className="history-entry-section">
+        <div className="history-detail-title">
+          <span>Entries</span>
+          <span>{day.entries.length}</span>
+        </div>
+        {day.entries.length === 0 ? (
+          <p className="history-empty">No entries logged for this day.</p>
+        ) : (
+          <div className="history-entry-list">
+            {day.entries.map((entry) => {
+              const meta = mealMeta[entry.meal_slot];
+              const Icon = meta.icon;
+              return (
+                <div className="history-entry" key={entry.id}>
+                  <span className={`meal-icon tone-${meta.tone}`}>
+                    <Icon size={15} />
+                  </span>
+                  <div>
+                    <strong>{entry.name}</strong>
+                    <span>
+                      {formatTime(entry.logged_at)} · {capitalize(entry.meal_slot)}
+                    </span>
+                    {entry.notes != null && entry.notes.trim().length > 0 && (
+                      <small>{entry.notes}</small>
+                    )}
+                  </div>
+                  <div className="history-entry-macros">
+                    <span>{formatNumber(entry.calories_kcal)} kcal</span>
+                    <span>{formatNumber(entry.protein_g)} g P</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DetailMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="detail-metric">
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   );
 }

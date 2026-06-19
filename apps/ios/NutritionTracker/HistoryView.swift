@@ -3,6 +3,7 @@ import SwiftUI
 @MainActor
 struct HistoryView: View {
     @Environment(AppStore.self) private var store
+    @State private var expandedDayId: String?
 
     var body: some View {
         Group {
@@ -89,7 +90,7 @@ struct HistoryView: View {
             } else {
                 VStack(spacing: 0) {
                     ForEach(Array(summary.days.enumerated()), id: \.element.id) { index, day in
-                        dayRow(day)
+                        dayDisclosure(day)
                         if index < summary.days.count - 1 {
                             Divider()
                         }
@@ -100,35 +101,174 @@ struct HistoryView: View {
         .card()
     }
 
-    private func dayRow(_ day: DayLog) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: day.dayType.systemImage)
-                .font(.caption)
-                .foregroundStyle(day.dayType == .training ? Color.brand : Color.macroPlum)
-                .frame(width: 32, height: 32)
-                .background((day.dayType == .training ? Color.brand : Color.macroPlum).opacity(0.12), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+    private func dayDisclosure(_ day: DayLog) -> some View {
+        let isExpanded = expandedDayId == day.id
+
+        return VStack(spacing: 0) {
+            Button {
+                withAnimation(.spring(response: 0.32, dampingFraction: 0.86)) {
+                    expandedDayId = isExpanded ? nil : day.id
+                }
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: day.dayType.systemImage)
+                        .font(.caption)
+                        .foregroundStyle(day.dayType == .training ? Color.brand : Color.macroPlum)
+                        .frame(width: 32, height: 32)
+                        .background((day.dayType == .training ? Color.brand : Color.macroPlum).opacity(0.12), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(day.localDate)
+                            .font(.subheadline.weight(.semibold))
+                        Text(day.dayType.title)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    VStack(alignment: .trailing, spacing: 2) {
+                        Text("\(day.totals.caloriesKcal.formatted(.number.precision(.fractionLength(0)))) kcal")
+                            .font(.subheadline.weight(.semibold))
+                            .monospacedDigit()
+                        Text("\(day.totals.proteinG.formatted(.number.precision(.fractionLength(0)))) g · \(day.totals.waterMl.formatted(.number.precision(.fractionLength(0)))) ml")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+
+                    Image(systemName: "chevron.down")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(isExpanded ? Color.brand : Color.secondary)
+                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                }
+            }
+            .buttonStyle(.plain)
+            .padding(.vertical, 8)
+            .contentShape(Rectangle())
+            .accessibilityIdentifier("history.day.\(day.id)")
+            .accessibilityElement(children: .combine)
+            .accessibilityAddTraits(isExpanded ? [.isButton, .isSelected] : .isButton)
+            .accessibilityHint(isExpanded ? "Double tap to hide this day's details" : "Double tap to show this day's details")
+
+            if isExpanded {
+                dayDetails(day)
+                    .transition(.opacity)
+                    .accessibilityIdentifier("history.details.\(day.id)")
+            }
+        }
+        .clipped()
+    }
+
+    private func dayDetails(_ day: DayLog) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                detailMetric("Carbs", value: day.totals.carbsG, unit: "g")
+                detailMetric("Protein", value: day.totals.proteinG, unit: "g")
+                detailMetric("Fat", value: day.totals.fatG, unit: "g")
+                detailMetric("Water target", value: day.waterTargetMl, unit: "ml")
+                detailMetric("Remaining", value: day.calculated.remainingIntakeKcal, unit: "kcal")
+                if let weight = day.bodyWeight?.weightKg {
+                    detailMetric("Weight", value: weight, unit: "kg")
+                } else {
+                    detailMetric("Weight", text: "Not logged")
+                }
+            }
+
+            HStack {
+                Text("ENTRIES")
+                    .font(.caption2.weight(.bold))
+                    .tracking(0.4)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text("\(day.entries.count)")
+                    .font(.caption.weight(.bold))
+                    .monospacedDigit()
+                    .foregroundStyle(.secondary)
+            }
+
+            if day.entries.isEmpty {
+                Text("No entries logged for this day.")
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(10)
+                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            } else {
+                VStack(spacing: 8) {
+                    ForEach(day.entries) { entry in
+                        historyEntryRow(entry)
+                    }
+                }
+            }
+        }
+        .padding(12)
+        .background(Color(.systemGroupedBackground), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .strokeBorder(Color.primary.opacity(0.06))
+        )
+        .padding(.bottom, 10)
+    }
+
+    private func detailMetric(_ label: String, value: Double, unit: String) -> some View {
+        detailMetric(
+            label,
+            text: "\(value.formatted(.number.precision(.fractionLength(unit == "kg" ? 1 : 0)))) \(unit)"
+        )
+    }
+
+    private func detailMetric(_ label: String, text: String) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
+            Text(label.uppercased())
+                .font(.caption2.weight(.bold))
+                .tracking(0.35)
+                .foregroundStyle(.secondary)
+            Text(text)
+                .font(.subheadline.weight(.semibold))
+                .monospacedDigit()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+    }
+
+    private func historyEntryRow(_ entry: Entry) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: entry.mealSlot.systemImage)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(entry.mealSlot.tint)
+                .frame(width: 30, height: 30)
+                .background(entry.mealSlot.tint.opacity(0.13), in: RoundedRectangle(cornerRadius: 7, style: .continuous))
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(day.localDate)
-                    .font(.subheadline.weight(.semibold))
-                Text(day.dayType.title)
+                Text(entry.name)
+                    .font(.footnote.weight(.semibold))
+                    .lineLimit(1)
+                Text("\(entry.mealSlot.title) · \(entry.caloriesKcal.formatted(.number.precision(.fractionLength(0)))) kcal")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                    .monospacedDigit()
+                if let notes = entry.notes, !notes.isEmpty {
+                    Text(notes)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(2)
+                }
             }
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 2) {
-                Text("\(day.totals.caloriesKcal.formatted(.number.precision(.fractionLength(0)))) kcal")
-                    .font(.subheadline.weight(.semibold))
-                    .monospacedDigit()
-                Text("\(day.totals.proteinG.formatted(.number.precision(.fractionLength(0)))) g · \(day.totals.waterMl.formatted(.number.precision(.fractionLength(0)))) ml")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .monospacedDigit()
+                Text("\(entry.proteinG.formatted(.number.precision(.fractionLength(0)))) g P")
+                Text("\(entry.carbsG.formatted(.number.precision(.fractionLength(0)))) g C")
             }
+            .font(.caption2.weight(.bold))
+            .foregroundStyle(.secondary)
+            .monospacedDigit()
         }
-        .padding(.vertical, 8)
+        .padding(10)
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
     }
 
     private func countTag(_ text: String, tint: Color) -> some View {
